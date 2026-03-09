@@ -84,12 +84,12 @@ td{padding:12px;font-weight:500;}tr+tr{border-top:1px solid var(--border);}
       <button class="multiselect-btn" onclick="togglePanel()">Alla restauranger</button>
       <div class="multiselect-panel" id="msPanel"></div>
     </div>
-    <label class="upload-btn mono">&uarr; Ladda upp Loggbok<input type="file" accept=".csv,.tsv,.txt" multiple onchange="loadFiles(this.files)"></label>
+    <label class="upload-btn mono">&uarr; Ladda upp Loggbok<input type="file" accept=".csv,.tsv,.txt" multiple onchange="loadFiles(this.files);this.value='';"></label>
   </div>
 </div></div>
 <div class="main">
-  <div id="dropzone" class="dropzone" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="event.preventDefault();this.classList.remove('over');dropFiles(event)">
-    <div class="mono" style="font-size:14px;color:var(--muted)">&#128194; Dra och sl&auml;pp dina Loggbok-CSV:er h&auml;r</div>
+  <div id="dropzone" class="dropzone">
+    <div id="dzText" class="mono" style="font-size:14px;color:var(--muted)">&#128194; Dra och sl&auml;pp dina Loggbok-CSV:er h&auml;r</div>
     <div style="font-size:11px;color:var(--dim);margin-top:6px">Du kan ladda upp flera m&aring;nader samtidigt &mdash; Arkiv &rarr; Ladda ned &rarr; CSV</div>
     <div id="uploadError" class="error"></div>
     <div id="fileList" class="file-list"></div>
@@ -141,6 +141,7 @@ function getMonthKeys(){return Object.keys(MONTHS).sort(function(a,b){var pa=a.s
 
 var fmt=function(n){return n!=null?Math.round(n).toLocaleString("sv-SE"):"\u2014";};
 var fmtK=function(n){return n>=1000?(n/1000).toFixed(1)+"k":fmt(n);};
+var fmtM=function(n){return(n/1000000).toFixed(2)+" mkr";};
 var fmtPct=function(n){return n!=null?n.toFixed(1)+"%":"\u2014";};
 
 function parseSEK(s){
@@ -156,25 +157,66 @@ function parseCSVRow(line){
   result.push(current);return result;
 }
 
-function parseLoggbok(text){
+function detectMonthFromFilename(filename){
+  if(!filename)return null;
+  var fn=filename.toUpperCase();
+  var monthMap={"JAN":1,"JANUARI":1,"FEB":2,"FEBRUARI":2,"MAR":3,"MARS":3,"APR":4,"APRIL":4,"MAJ":5,"JUN":6,"JUNI":6,"JUL":7,"JULI":7,"AUG":8,"AUGUSTI":8,"SEP":9,"SEPTEMBER":9,"OKT":10,"OKTOBER":10,"NOV":11,"NOVEMBER":11,"DEC":12,"DECEMBER":12};
+  var foundMonth=null,foundYear=null;
+  for(var name in monthMap){
+    if(fn.indexOf(name)>=0){foundMonth=monthMap[name];break;}
+  }
+  var yrMatch=fn.match(/(20\d{2})/);
+  if(yrMatch)foundYear=parseInt(yrMatch[1]);
+  if(foundMonth&&foundYear)return{month:foundMonth,year:foundYear};
+  return null;
+}
+
+function parseLoggbok(text,filename){
   var lines=text.replace(/\r/g,"").split("\n");
   var data={restaurants:[],days:[],daily:[],perRest:{},month:"",year:"",monthKey:"",comments:[]};
   var headerIdx=-1;
   for(var i=0;i<Math.min(lines.length,25);i++){if(lines[i].indexOf("DATUM")>=0||lines[i].indexOf("Datum")>=0){headerIdx=i;break;}}
   if(headerIdx<0)return null;
 
+  // Try to detect month from filename first
+  var fnMonth=detectMonthFromFilename(filename);
+
+  var SV_MONTHS={"jan":1,"januari":1,"feb":2,"februari":2,"mar":3,"mars":3,"apr":4,"april":4,"maj":5,"jun":6,"juni":6,"jul":7,"juli":7,"aug":8,"augusti":8,"sep":9,"september":9,"okt":10,"oktober":10,"nov":11,"november":11,"dec":12,"december":12};
+
+  function parseDate(str){
+    if(!str)return null;
+    str=str.trim();
+    // Format: "2/1/2026" (month/day/year)
+    if(str.indexOf("/")>=0){
+      var p=str.split("/");if(p.length>=3){var mo=parseInt(p[0]),dy=parseInt(p[1]),yr=parseInt(p[2]);if(!isNaN(mo)&&!isNaN(dy)&&!isNaN(yr))return{day:dy,month:mo,year:yr};}
+    }
+    // Format: "1 mars" or "15 mars" (day + swedish month)
+    var m=str.match(/^(\d{1,2})\s+([a-zåäö]+)/i);
+    if(m){var dy2=parseInt(m[1]);var moName=m[2].toLowerCase();if(SV_MONTHS[moName])return{day:dy2,month:SV_MONTHS[moName],year:fnMonth?fnMonth.year:2026};}
+    // Format: just a number (day of month)
+    var num=parseInt(str);
+    if(!isNaN(num)&&num>=1&&num<=31)return{day:num,month:fnMonth?fnMonth.month:0,year:fnMonth?fnMonth.year:0};
+    return null;
+  }
+
   for(var i=headerIdx+1;i<lines.length;i++){
     var row=parseCSVRow(lines[i]);
     var dateStr=(row[2]||"").trim();
-    if(!dateStr||dateStr.indexOf("/")<0)continue;
+    var parsed=parseDate(dateStr);
+    if(!parsed)continue;
+    var dy=parsed.day,mo=parsed.month,yr=parsed.year;
     var sales=parseSEK(row[12]);
     var fcSales=parseSEK(row[5]);
     if(sales===0&&fcSales===0)continue;
-    var parts=dateStr.split("/");
-    if(parts.length<3)continue;
-    var mo=parseInt(parts[0]),dy=parseInt(parts[1]),yr=parseInt(parts[2]);
-    if(isNaN(dy)||isNaN(mo)||isNaN(yr))continue;
-    if(!data.month){data.month=String(mo);data.year=String(yr);data.monthKey=mo+"/"+yr;}
+
+    // Use filename month if available (overrides the date column which may be wrong)
+    if(!data.month){
+      if(fnMonth){
+        data.month=String(fnMonth.month);data.year=String(fnMonth.year);data.monthKey=fnMonth.month+"/"+fnMonth.year;
+      }else if(mo&&yr){
+        data.month=String(mo);data.year=String(yr);data.monthKey=mo+"/"+yr;
+      }
+    }
 
     var comment="";
     for(var ci=37;ci<row.length;ci++){if(row[ci]&&row[ci].trim().length>3&&row[ci].indexOf("#DIV")<0&&row[ci].indexOf("%")<0){comment=row[ci].trim();break;}}
@@ -218,32 +260,52 @@ function parseLoggbok(text){
 }
 
 function loadFiles(files){
-  document.getElementById("uploadError").textContent="";
-  var count=0;
+  var errEl=document.getElementById("uploadError");
+  if(errEl)errEl.textContent="";
+  var total=files.length;
+  var done=0;
+  var added=0;
   Array.from(files).forEach(function(file){
+    var fname=file.name;
     var reader=new FileReader();
     reader.onload=function(e){
-      var parsed=parseLoggbok(e.target.result);
-      if(parsed&&parsed.daily.length){
-        MONTHS[parsed.monthKey]=parsed;
-        if(!currentMonth)currentMonth=parsed.monthKey;
-        selectedRests=getData().restaurants.slice();
-        count++;
-      }
-      // After last file
-      if(count>0||files.length===1){
-        if(!Object.keys(MONTHS).length){document.getElementById("uploadError").textContent="Kunde inte l\u00e4sa filen.";return;}
-        var keys=getMonthKeys();currentMonth=keys[keys.length-1];
+      try{
+        var parsed=parseLoggbok(e.target.result,fname);
+        if(parsed&&parsed.daily.length){
+          MONTHS[parsed.monthKey]=parsed;
+          currentMonth=parsed.monthKey;
+          added++;
+        }
+      }catch(ex){}
+      done++;
+      if(done===total){
+        if(added===0){var el=document.getElementById("uploadError");if(el)el.textContent="Kunde inte l\u00e4sa filen. Kontrollera att det \u00e4r en Loggbok-export.";return;}
         selectedRests=getData().restaurants.slice();
         buildPanel();renderMonthBar();render();
-        document.getElementById("dropzone").style.display="none";
+        updateDropzone();
       }
     };
     reader.readAsText(file);
   });
 }
 
-function dropFiles(e){loadFiles(e.dataTransfer.files);}
+function updateDropzone(){
+  var keys=getMonthKeys();
+  var dzText=document.getElementById("dzText");
+  var fileList=document.getElementById("fileList");
+  if(dzText&&keys.length>0)dzText.textContent="\uD83D\uDCC2 "+keys.length+" m\u00e5nad(er) laddade \u2014 dra fler h\u00e4r";
+  if(fileList){
+    fileList.innerHTML=keys.map(function(k){var p=k.split("/");return'<span class="file-tag">'+MONTH_NAMES[parseInt(p[0])]+" "+p[1]+'</span>';}).join("");
+  }
+}
+
+// Dropzone drag & drop via JS event listeners (survives any DOM changes)
+(function(){
+  var dz=document.getElementById("dropzone");
+  dz.addEventListener("dragover",function(e){e.preventDefault();e.stopPropagation();dz.classList.add("over");});
+  dz.addEventListener("dragleave",function(e){e.preventDefault();e.stopPropagation();dz.classList.remove("over");});
+  dz.addEventListener("drop",function(e){e.preventDefault();e.stopPropagation();dz.classList.remove("over");if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length)loadFiles(e.dataTransfer.files);});
+})();
 
 function selectMonth(key){currentMonth=key;selectedRests=getData().restaurants.slice();buildPanel();renderMonthBar();render();}
 
@@ -258,7 +320,7 @@ function renderMonthBar(){
     var label=MONTH_NAMES[mo]+" "+parts[1];
     html+='<button class="month-chip'+(k===currentMonth?" active":"")+'" onclick="selectMonth(\''+k+'\')">'+label+'</button>';
   });
-  html+='<label class="month-chip" style="color:var(--accent);border:1px dashed var(--accent);background:transparent">+ L&auml;gg till m&aring;nad<input type="file" accept=".csv,.tsv,.txt" multiple style="display:none" onchange="loadFiles(this.files)"></label>';
+  html+='<label class="month-chip" style="color:var(--accent);border:1px dashed var(--accent);background:transparent">+ L&auml;gg till m&aring;nad<input type="file" accept=".csv,.tsv,.txt" multiple style="display:none" onchange="loadFiles(this.files);this.value=\'\';"></label>';
   bar.innerHTML=html;
 }
 
@@ -301,7 +363,7 @@ function render(){
 
   var ttMin=Math.floor(avgTT/60),ttSec=Math.round(avgTT%60);
   document.getElementById("kpis").innerHTML=[
-    kpiHTML("&#128176;","F&ouml;rs&auml;ljning",fmtK(totalSales)+" kr","","linear-gradient(90deg,var(--accent),transparent)"),
+    kpiHTML("&#128176;","F&ouml;rs&auml;ljning",fmtM(totalSales),"","linear-gradient(90deg,var(--accent),transparent)"),
     kpiHTML("&#128101;","Labor %",fmtPct(laborPct),fmt(totalLabor)+" kr","linear-gradient(90deg,"+(laborPct>30?"var(--red)":"var(--green)")+",transparent)"),
     kpiHTML("&#128465;","Waste %",fmtPct(wastePct),fmt(totalWaste)+" kr","linear-gradient(90deg,"+(wastePct>0.7?"var(--red)":"var(--green)")+",transparent)"),
     kpiHTML("&#9201;","Fsg/timme",fmt(salesPerHour)+" kr",fmt(totalHours)+" timmar","linear-gradient(90deg,var(--purple),transparent)"),
