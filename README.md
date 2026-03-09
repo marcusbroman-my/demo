@@ -145,9 +145,12 @@ var fmtM=function(n){return(n/1000000).toFixed(2)+" mkr";};
 var fmtPct=function(n){return n!=null?n.toFixed(1)+"%":"\u2014";};
 
 function parseSEK(s){
-  if(!s||s==="-"||s==="#DIV/0!")return 0;
-  s=String(s).replace(/"/g,"").replace(/ kr/g,"").replace(/\s/g,"").replace(/\u00a0/g,"");
-  s=s.replace(/,/g,"");
+  if(!s||s==="-"||s==="#DIV/0!"||s==="#REF!")return 0;
+  s=String(s).replace(/"/g,"").replace(/kr/g,"").replace(/%/g,"").replace(/\u00a0/g," ").replace(/\u2212/g,"-").trim();
+  s=s.replace(/\s/g,"");
+  var commaMatch=s.match(/^([\-]?[\d]+),(\d{1,2})$/);
+  if(commaMatch){s=commaMatch[1]+"."+commaMatch[2];}
+  else{s=s.replace(/,/g,"");}
   return parseFloat(s)||0;
 }
 
@@ -169,6 +172,14 @@ function detectMonthFromFilename(filename){
   if(yrMatch)foundYear=parseInt(yrMatch[1]);
   if(foundMonth&&foundYear)return{month:foundMonth,year:foundYear};
   return null;
+}
+
+function detectRestFromFilename(filename){
+  if(!filename)return null;
+  var fn=filename.replace(/\.[^.]+$/,"").replace(/_/g," ").replace(/-/g," ");
+  var skip=["loggbok","stockholm","mars","februari","januari","april","maj","juni","juli","augusti","september","oktober","november","december","jan","feb","mar","apr","jun","jul","aug","sep","okt","nov","dec","2024","2025","2026","2027","csv","version"];
+  var words=fn.split(/\s+/).filter(function(w){return w.length>1&&skip.indexOf(w.toLowerCase())<0&&!/^\d+$/.test(w);});
+  return words.length>0?words.join(" "):null;
 }
 
 function parseLoggbok(text,filename){
@@ -199,14 +210,34 @@ function parseLoggbok(text,filename){
     return null;
   }
 
+  // Auto-detect column layout by scanning first data row
+  // District: sales at col 12, Single restaurant: sales at col 13 (extra AF-stöd column)
+  var layout="district";
+  for(var i=headerIdx+1;i<lines.length;i++){
+    var testRow=parseCSVRow(lines[i]);
+    var testDate=(testRow[2]||"").trim();
+    if(!parseDate(testDate))continue;
+    var v12=parseSEK(testRow[12]),v13=parseSEK(testRow[13]);
+    if(v12===0&&v13>0){layout="single";}
+    break;
+  }
+
+  // Column mappings
+  var COL;
+  if(layout==="single"){
+    COL={fcSales:5,fcHours:7,fcCost:8,fcPct:9,fcWaste:10,sales:13,absence:15,hours:16,laborCost:17,laborPct:18,waste:20,wastePct:21,ticketTime:37,commentStart:45};
+  }else{
+    COL={fcSales:5,fcHours:6,fcCost:7,fcPct:8,fcWaste:9,sales:12,absence:13,hours:14,laborCost:15,laborPct:16,waste:17,wastePct:18,ticketTime:33,commentStart:37};
+  }
+
   for(var i=headerIdx+1;i<lines.length;i++){
     var row=parseCSVRow(lines[i]);
     var dateStr=(row[2]||"").trim();
     var parsed=parseDate(dateStr);
     if(!parsed)continue;
     var dy=parsed.day,mo=parsed.month,yr=parsed.year;
-    var sales=parseSEK(row[12]);
-    var fcSales=parseSEK(row[5]);
+    var sales=parseSEK(row[COL.sales]);
+    var fcSales=parseSEK(row[COL.fcSales]);
     if(sales===0&&fcSales===0)continue;
 
     // Use filename month if available (overrides the date column which may be wrong)
@@ -219,13 +250,16 @@ function parseLoggbok(text,filename){
     }
 
     var comment="";
-    for(var ci=37;ci<row.length;ci++){if(row[ci]&&row[ci].trim().length>3&&row[ci].indexOf("#DIV")<0&&row[ci].indexOf("%")<0){comment=row[ci].trim();break;}}
+    for(var ci=COL.commentStart;ci<row.length;ci++){
+      var cv=(row[ci]||"").trim();
+      if(cv.length>3&&cv.indexOf("#DIV")<0&&cv.indexOf("#REF")<0&&cv.indexOf("%")<0&&!cv.match(/^[\d.,\-]+$/)&&!cv.match(/^\d+\.\d+%?$/)){comment=cv;break;}
+    }
 
     data.daily.push({
       day:dy,date:dateStr,weekday:(row[3]||"").trim(),
-      fcSales:fcSales,fcLaborHours:parseSEK(row[6]),fcLaborCost:parseSEK(row[7]),fcLaborPct:parseSEK(row[8]),fcWaste:parseSEK(row[9]),
-      sales:sales,absenceHours:parseSEK(row[13]),laborHours:parseSEK(row[14]),laborCost:parseSEK(row[15]),laborPct:parseSEK(row[16]),
-      wasteCost:parseSEK(row[17]),wastePct:parseSEK(row[18]),status:(row[19]||"").trim(),ticketTime:parseSEK(row[33]),comment:comment
+      fcSales:fcSales,fcLaborHours:parseSEK(row[COL.fcHours]),fcLaborCost:parseSEK(row[COL.fcCost]),fcLaborPct:parseSEK(row[COL.fcPct]),fcWaste:parseSEK(row[COL.fcWaste]),
+      sales:sales,absenceHours:parseSEK(row[COL.absence]),laborHours:parseSEK(row[COL.hours]),laborCost:parseSEK(row[COL.laborCost]),laborPct:parseSEK(row[COL.laborPct]),
+      wasteCost:parseSEK(row[COL.waste]),wastePct:parseSEK(row[COL.wastePct]),status:"",ticketTime:parseSEK(row[COL.ticketTime]),comment:comment
     });
     if(comment)data.comments.push({day:dy,date:dateStr,weekday:(row[3]||"").trim(),text:comment});
   }
@@ -256,6 +290,23 @@ function parseLoggbok(text,filename){
       for(var d=1;d<=31;d++){var val=parseSEK(row[28+d]);if(val)data.perRest[name][key][d]=val;}
     }
   }
+
+  // Fallback: if no per-restaurant data found (single restaurant file),
+  // use the daily totals as a single restaurant entry
+  if(data.restaurants.length===0){
+    var restName=detectRestFromFilename(filename)||"Min restaurang";
+    data.restaurants.push(restName);
+    data.perRest[restName]={sales:{},laborCost:{},waste:{},hours:{},absenceHours:{},ticketTime:{}};
+    data.daily.forEach(function(d){
+      if(d.sales)data.perRest[restName].sales[d.day]=d.sales;
+      if(d.laborCost)data.perRest[restName].laborCost[d.day]=d.laborCost;
+      if(d.wasteCost)data.perRest[restName].waste[d.day]=d.wasteCost;
+      if(d.laborHours)data.perRest[restName].hours[d.day]=d.laborHours;
+      if(d.absenceHours)data.perRest[restName].absenceHours[d.day]=d.absenceHours;
+      if(d.ticketTime)data.perRest[restName].ticketTime[d.day]=d.ticketTime;
+    });
+  }
+
   return data;
 }
 
