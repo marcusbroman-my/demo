@@ -197,8 +197,8 @@ function parseLoggbok(text,filename){
     break;
   }
   var C;
-  if(layout==="single")C={fc:5,fcH:7,fcC:8,fcP:9,fcW:10,s:13,ab:15,h:16,lc:17,lp:18,w:20,wp:21,tt:37,cs:45};
-  else C={fc:5,fcH:6,fcC:7,fcP:8,fcW:9,s:12,ab:13,h:14,lc:15,lp:16,w:17,wp:18,tt:33,cs:37};
+  if(layout==="single")C={fc:5,fcAf:6,fcH:7,fcC:8,fcP:9,fcW:10,s:13,af:14,ab:15,h:16,lc:17,lp:18,w:20,wp:21,tt:37,cs:45};
+  else C={fc:5,fcAf:-1,fcH:6,fcC:7,fcP:8,fcW:9,s:12,af:-1,ab:13,h:14,lc:15,lp:16,w:17,wp:18,tt:33,cs:37};
 
   // Use filename month override
   var useMo=fnM?fnM.m:null,useYr=fnM?fnM.y:null;
@@ -217,10 +217,12 @@ function parseLoggbok(text,filename){
     var cmt="";
     for(var ci=C.cs;ci<row.length;ci++){var cv=(row[ci]||"").trim();if(cv.length>3&&cv.indexOf("#DIV")<0&&cv.indexOf("#REF")<0&&!/^\d+[\d.,%-]*$/.test(cv)&&cv.indexOf("%")<0){cmt=cv;break;}}
 
+    var grant=C.af>=0?parseSEK(row[C.af]):0;
+
     daily.push({
       date:iso,day:pd.d,month:mo,year:yr,weekday:(row[3]||"").trim(),
       fcSales:fcS,fcHours:parseSEK(row[C.fcH]),fcCost:parseSEK(row[C.fcC]),fcPct:parseSEK(row[C.fcP]),fcWaste:parseSEK(row[C.fcW]),
-      sales:sales,absence:parseSEK(row[C.ab]),hours:parseSEK(row[C.h]),laborCost:parseSEK(row[C.lc]),laborPct:parseSEK(row[C.lp]),
+      sales:sales,grant:grant,absence:parseSEK(row[C.ab]),hours:parseSEK(row[C.h]),laborCost:parseSEK(row[C.lc]),laborPct:parseSEK(row[C.lp]),
       waste:parseSEK(row[C.w]),wastePct:parseSEK(row[C.wp]),tt:parseSEK(row[C.tt]),comment:cmt
     });
     if(cmt)comments.push({date:iso,day:pd.d,weekday:(row[3]||"").trim(),text:cmt});
@@ -261,6 +263,7 @@ function parseLoggbok(text,filename){
     daily.forEach(function(d){
       if(!perRest[rn][d.date])perRest[rn][d.date]={};
       if(d.sales)perRest[rn][d.date].sales=d.sales;
+      if(d.grant)perRest[rn][d.date].grant=d.grant;
       if(d.laborCost)perRest[rn][d.date].laborCost=d.laborCost;
       if(d.waste)perRest[rn][d.date].waste=d.waste;
       if(d.hours)perRest[rn][d.date].hours=d.hours;
@@ -366,24 +369,73 @@ function render(){
   tabsEl.style.display="flex";
   tabsEl.innerHTML=VIEWS.map(function(v,i){return'<button class="tab'+(currentView===v?" active":"")+'" onclick="currentView=\''+v+'\';render()">'+VIEW_LABELS[i]+'</button>';}).join("");
 
-  // Aggregate
-  var sel=getSel();var tS=0,tL=0,tW=0,tH=0,ttS=0,ttC=0,tFcS=0,tAb=0;
-  data.forEach(function(d){tS+=d.sales;tL+=d.laborCost;tW+=d.waste;tH+=d.hours;tFcS+=d.fcSales;tAb+=d.absence;if(d.tt>0){ttS+=d.tt;ttC++;}});
+  // Aggregate (grant/AF-stöd added to effective sales for labor% calculation)
+  var sel=getSel();var tS=0,tG=0,tL=0,tW=0,tH=0,ttS=0,ttC=0,tFcS=0,tFcL=0,tAb=0;
+  data.forEach(function(d){tS+=d.sales;tG+=(d.grant||0);tL+=d.laborCost;tW+=d.waste;tH+=d.hours;tFcS+=d.fcSales;tFcL+=d.fcCost;tAb+=(d.absence||0);if(d.tt>0){ttS+=d.tt;ttC++;}});
   if(!isAll()){
-    tS=0;tL=0;tW=0;tH=0;ttS=0;ttC=0;tAb=0;
+    tS=0;tG=0;tL=0;tW=0;tH=0;ttS=0;ttC=0;tAb=0;
     var dates=data.map(function(d){return d.date;});
-    sel.forEach(function(r){if(!ALL_REST[r])return;dates.forEach(function(dt){var rd=ALL_REST[r][dt];if(!rd)return;tS+=(rd.sales||0);tL+=(rd.laborCost||0);tW+=(rd.waste||0);tH+=(rd.hours||0);tAb+=(rd.absence||0);if(rd.tt>0){ttS+=rd.tt;ttC++;}});});
+    sel.forEach(function(r){if(!ALL_REST[r])return;dates.forEach(function(dt){var rd=ALL_REST[r][dt];if(!rd)return;tS+=(rd.sales||0);tG+=(rd.grant||0);tL+=(rd.laborCost||0);tW+=(rd.waste||0);tH+=(rd.hours||0);tAb+=(rd.absence||0);if(rd.tt>0){ttS+=rd.tt;ttC++;}});});
   }
-  var lp=tS?tL/tS*100:0,wp=tS?tW/tS*100:0,sph=tH?tS/tH:0,avgTT=ttC?ttS/ttC:0;
+  var effS=tS+tG; // effective sales = sales + grant support
+  var lp=effS?tL/effS*100:0,wp=effS?tW/effS*100:0,sph=tH?effS/tH:0,avgTT=ttC?ttS/ttC:0;
   var diffS=tS-tFcS;
+  var abRate=(tH+tAb)?(tAb/(tH+tAb)*100):0;
 
-  // KPIs
-  document.getElementById("kpis").innerHTML=
-    '<div class="kpi"><div class="kpi-top"><span class="kpi-title">F\u00f6rs\u00e4ljning</span></div><div class="kpi-row"><span class="kpi-main" style="color:var(--text);font-size:26px">'+fmt(tS)+'<span class="kpi-unit">kr</span></span></div><div class="kpi-sub">'+data.length+' dagar | '+fmt(data.length?Math.round(tS/data.length):0)+' kr/dag</div></div>'+
-    '<div class="kpi"><div class="kpi-top"><span class="kpi-title">Labor</span><span class="kpi-badge" style="background:'+(lp>30?"rgba(239,68,68,0.15);color:var(--red)":"rgba(34,197,94,0.15);color:var(--green)")+'">'+fmtPct(lp)+'</span></div><div class="kpi-row"><span class="kpi-main" style="color:var(--text)">'+fmt(tL)+'<span class="kpi-unit">kr</span></span></div><div class="kpi-sub">'+fmt(tH)+' timmar | '+fmt(sph)+' kr/timme</div></div>'+
-    '<div class="kpi"><div class="kpi-top"><span class="kpi-title">Waste</span><span class="kpi-badge" style="background:'+(wp>0.7?"rgba(239,68,68,0.15);color:var(--red)":"rgba(34,197,94,0.15);color:var(--green)")+'">'+fmtPct(wp)+'</span></div><div class="kpi-row"><span class="kpi-main" style="color:var(--text)">'+fmt(tW)+'<span class="kpi-unit">kr</span></span></div><div class="kpi-sub">'+(tS?fmtPct(wp):"0%")+' av f\u00f6rs\u00e4ljning</div></div>'+
-    '<div class="kpi"><div class="kpi-top"><span class="kpi-title">Ticket Time</span><span class="kpi-badge" style="background:'+(avgTT>360?"rgba(239,68,68,0.15);color:var(--red)":"rgba(34,197,94,0.15);color:var(--green)")+'">'+fmtMM(avgTT)+'</span></div><div class="kpi-row"><span class="kpi-main" style="color:var(--text)">'+fmt(Math.round(avgTT))+'<span class="kpi-unit">sek</span></span></div><div class="kpi-sub">Snitt \u00f6ver '+ttC+' dagar</div></div>'+
-    '<div class="kpi"><div class="kpi-top"><span class="kpi-title">Prognos vs Utfall</span><span class="kpi-badge" style="background:'+(diffS>=0?"rgba(34,197,94,0.15);color:var(--green)":"rgba(239,68,68,0.15);color:var(--red)")+'">'+(diffS>=0?"+":"")+fmt(diffS)+' kr</span></div><div class="kpi-row"><span class="kpi-main" style="color:var(--text);font-size:22px">'+fmt(tFcS)+'<span class="kpi-unit">kr prognos</span></span></div><div class="kpi-sub">Utfall: '+fmt(tS)+' kr</div></div>';
+  // View-specific KPIs
+  function kpi(title,main,unit,sub,badge,badgeColor){
+    var bc=badgeColor==="red"?"rgba(239,68,68,0.15);color:var(--red)":badgeColor==="green"?"rgba(34,197,94,0.15);color:var(--green)":"rgba(245,158,11,0.15);color:var(--amber)";
+    var badgeHtml=badge?'<span class="kpi-badge" style="background:'+bc+'">'+badge+'</span>':"";
+    return'<div class="kpi"><div class="kpi-top"><span class="kpi-title">'+title+'</span>'+badgeHtml+'</div><div class="kpi-row"><span class="kpi-main" style="color:var(--text);font-size:24px">'+main+'<span class="kpi-unit">'+unit+'</span></span></div><div class="kpi-sub">'+sub+'</div></div>';
+  }
+
+  var kpiHtml="";
+  if(currentView==="overview"){
+    kpiHtml=kpi("F\u00f6rs\u00e4ljning",fmt(tS),"kr",data.length+" dagar | "+fmt(data.length?Math.round(tS/data.length):0)+" kr/dag","","")
+      +kpi("Labor",fmt(tL),"kr",fmt(tH)+" timmar | "+fmt(Math.round(sph))+" kr/timme",fmtPct(lp),lp>25?"red":"green")
+      +kpi("Waste",fmt(tW),"kr",fmtPct(wp)+" av f\u00f6rs\u00e4ljning",fmtPct(wp),wp>1?"red":"green")
+      +kpi("Ticket Time",fmt(Math.round(avgTT)),"sek","Snitt \u00f6ver "+ttC+" dagar",fmtMM(avgTT),avgTT>360?"red":"green")
+      +kpi("Sjukfr\u00e5nvaro",fmt(Math.round(tAb)),"tim",fmt(data.filter(function(d){return(d.absence||0)>0;}).length)+" dagar med fr\u00e5nvaro",fmtPct(abRate),abRate>2?"red":"green");
+  }else if(currentView==="compare"){
+    var best=null,worst=null;
+    sel.forEach(function(r){if(!ALL_REST[r])return;var s=0;dates.forEach(function(dt){var rd=ALL_REST[r][dt];if(rd)s+=(rd.sales||0);});if(!best||s>best.v){best={n:r,v:s};}if(!worst||s<worst.v){worst={n:r,v:s};}});
+    kpiHtml=kpi("Restauranger",sel.length+"","st",data.length+" dagar i perioden","","")
+      +kpi("Total f\u00f6rs\u00e4ljning",fmt(tS),"kr","Snitt "+fmt(sel.length?Math.round(tS/sel.length):0)+" kr/rest","","")
+      +kpi("Snitt labor %","",fmtPct(lp),"Alla valda restauranger",fmtPct(lp),lp>25?"red":"green")
+      +kpi("B\u00e4st f\u00f6rs\u00e4ljning",best?best.n:"","",best?fmt(best.v)+" kr":"","","")
+      +kpi("L\u00e4gst f\u00f6rs\u00e4ljning",worst?worst.n:"","",worst?fmt(worst.v)+" kr":"","","");
+  }else if(currentView==="trends"){
+    var maxDay=null,minDay=null;
+    data.forEach(function(d){var ds=isAll()?d.sales:(function(){var s=0;sel.forEach(function(r){var rd=ALL_REST[r]&&ALL_REST[r][d.date];if(rd)s+=(rd.sales||0);});return s;})();if(!maxDay||ds>maxDay.v){maxDay={d:d.date,v:ds};}if(!minDay||ds<minDay.v){minDay={d:d.date,v:ds};}});
+    kpiHtml=kpi("Total f\u00f6rs\u00e4ljning",fmt(tS),"kr","Snitt "+fmt(data.length?Math.round(tS/data.length):0)+" kr/dag","","")
+      +kpi("Total labor",fmt(tL),"kr",fmt(tH)+" timmar totalt",fmtPct(lp),lp>25?"red":"green")
+      +kpi("Total waste",fmt(tW),"kr",fmtPct(wp)+" av f\u00f6rs\u00e4ljning","","")
+      +kpi("B\u00e4sta dag",maxDay?shortDate(maxDay.d):"","",maxDay?fmt(maxDay.v)+" kr":"","","")
+      +kpi("S\u00e4msta dag",minDay?shortDate(minDay.d):"","",minDay?fmt(minDay.v)+" kr":"","","");
+  }else if(currentView==="forecast"){
+    var diffL=tL-tFcL;
+    kpiHtml=kpi("Prognos f\u00f6rs\u00e4ljning",fmt(tFcS),"kr","Planerad total","","")
+      +kpi("Utfall f\u00f6rs\u00e4ljning",fmt(tS),"kr",(diffS>=0?"+":"")+fmt(diffS)+" kr diff",(diffS>=0?"+":"")+fmtPct(tFcS?diffS/tFcS*100:0),diffS>=0?"green":"red")
+      +kpi("Prognos labor",fmt(Math.round(tFcL)),"kr","Planerad kostnad","","")
+      +kpi("Utfall labor",fmt(tL),"kr",(diffL>=0?"+":"")+fmt(Math.round(diffL))+" kr diff",(diffL>=0?"+":"")+fmtPct(tFcL?diffL/tFcL*100:0),diffL>0?"red":"green")
+      +kpi("Tr\u00e4ffs\u00e4kerhet","",fmtPct(tFcS?tS/tFcS*100:0),"F\u00f6rs\u00e4ljning utfall/prognos","","");
+  }else if(currentView==="tickettime"){
+    var minTT=Infinity,maxTT=0,bestD="",worstD="";
+    data.forEach(function(d){var tv=isAll()?d.tt:(function(){var s=0,c=0;sel.forEach(function(r){var rd=ALL_REST[r]&&ALL_REST[r][d.date];if(rd&&rd.tt>0){s+=rd.tt;c++;}});return c?s/c:0;})();if(tv>0&&tv<minTT){minTT=tv;bestD=d.date;}if(tv>maxTT){maxTT=tv;worstD=d.date;}});
+    kpiHtml=kpi("Snitt ticket time",fmt(Math.round(avgTT)),"sek",fmtMM(avgTT)+" (mm:ss)",fmtMM(avgTT),avgTT>360?"red":"green")
+      +kpi("B\u00e4sta dag",bestD?shortDate(bestD):"","",minTT<Infinity?fmtMM(minTT)+" ("+fmt(Math.round(minTT))+" sek)":"","","")
+      +kpi("S\u00e4msta dag",worstD?shortDate(worstD):"","",maxTT?fmtMM(maxTT)+" ("+fmt(Math.round(maxTT))+" sek)":"","","")
+      +kpi("Dagar med data",ttC+"","","av "+data.length+" totalt","","")
+      +kpi("Mål \u2264 360 sek","","",avgTT<=360?"\u2713 Inom m\u00e5l":"\u2717 \u00d6ver m\u00e5l",avgTT<=360?"\u2713":"\u2717",avgTT<=360?"green":"red");
+  }else if(currentView==="absence"){
+    var abDays=data.filter(function(d){return(d.absence||0)>0;}).length;
+    kpiHtml=kpi("Sjuktimmar",fmt(Math.round(tAb)),"tim",abDays+" dagar med fr\u00e5nvaro",fmtPct(abRate),abRate>2?"red":"green")
+      +kpi("Arbetade timmar",fmt(tH),"tim","Totalt i perioden","","")
+      +kpi("Fr\u00e5nvarokvot","",fmtPct(abRate),"Sjuktimmar / totala timmar","","")
+      +kpi("Snitt sjuk/dag","",fmt(tAb&&abDays?Math.round(tAb/abDays):0)+" tim","Per dag med fr\u00e5nvaro","","")
+      +kpi("Dagar i period",data.length+"","","","","");
+  }
+  document.getElementById("kpis").innerHTML=kpiHtml;
 
   var el=document.getElementById("content");
   if(currentView==="overview")vOverview(el,data);
@@ -401,8 +453,9 @@ function vOverview(el,data){
   var labels=data.map(function(d){return shortDate(d.date);});
   var sel=getSel();
   var salesArr=isAll()?data.map(function(d){return d.sales;}):data.map(function(d){var s=0;sel.forEach(function(r){var rd=ALL_REST[r]&&ALL_REST[r][d.date];if(rd)s+=(rd.sales||0);});return s;});
+  var grantArr=isAll()?data.map(function(d){return d.grant||0;}):data.map(function(d){var s=0;sel.forEach(function(r){var rd=ALL_REST[r]&&ALL_REST[r][d.date];if(rd)s+=(rd.grant||0);});return s;});
   var laborArr=isAll()?data.map(function(d){return d.laborCost;}):data.map(function(d){var s=0;sel.forEach(function(r){var rd=ALL_REST[r]&&ALL_REST[r][d.date];if(rd)s+=(rd.laborCost||0);});return s;});
-  var lpArr=data.map(function(_,i){return salesArr[i]?(laborArr[i]/salesArr[i]*100):0;});
+  var lpArr=data.map(function(_,i){var eff=salesArr[i]+grantArr[i];return eff?(laborArr[i]/eff*100):0;});
 
   el.innerHTML='<div class="grid grid-2"><div class="card"><h3>Daglig f\u00f6rs\u00e4ljning</h3><div class="chart-wrap"><canvas id="o1"></canvas></div></div><div class="card"><h3>Labor % per dag</h3><div class="chart-wrap"><canvas id="o2"></canvas></div></div><div class="card card-full"><h3>F\u00f6rs\u00e4ljning per restaurang</h3><div class="chart-wrap tall"><canvas id="o3"></canvas></div></div></div>';
 
@@ -415,10 +468,10 @@ function vOverview(el,data){
 
 function vCompare(el,data){
   var sel=getSel();var dates=data.map(function(d){return d.date;});
-  var comp=sel.map(function(r){var i=ALL_RESTAURANTS.indexOf(r);var s=0,l=0,w=0,h=0;dates.forEach(function(dt){var rd=ALL_REST[r]&&ALL_REST[r][dt];if(!rd)return;s+=(rd.sales||0);l+=(rd.laborCost||0);w+=(rd.waste||0);h+=(rd.hours||0);});
-    return{name:r,idx:i,sales:s,labor:l,waste:w,hours:h,lp:s?+(l/s*100).toFixed(1):0,wp:s?+(w/s*100).toFixed(1):0,sph:h?Math.round(s/h):0};});
+  var comp=sel.map(function(r){var i=ALL_RESTAURANTS.indexOf(r);var s=0,g=0,l=0,w=0,h=0;dates.forEach(function(dt){var rd=ALL_REST[r]&&ALL_REST[r][dt];if(!rd)return;s+=(rd.sales||0);g+=(rd.grant||0);l+=(rd.laborCost||0);w+=(rd.waste||0);h+=(rd.hours||0);});
+    var eff=s+g;return{name:r,idx:i,sales:s,labor:l,waste:w,hours:h,lp:eff?+(l/eff*100).toFixed(1):0,wp:eff?+(w/eff*100).toFixed(1):0,sph:h?Math.round(eff/h):0};});
 
-  var rows=comp.map(function(r){return'<tr><td style="font-weight:700;color:'+CC[r.idx%CC.length]+'">'+r.name+'</td><td>'+fmt(r.sales)+' kr</td><td style="color:'+(r.lp>30?"var(--red)":"var(--green)")+'">'+fmtPct(r.lp)+'</td><td style="color:'+(r.wp>0.7?"var(--red)":"var(--green)")+'">'+fmtPct(r.wp)+'</td><td>'+fmt(r.sph)+' kr</td><td>'+fmt(r.hours)+'</td></tr>';}).join("");
+  var rows=comp.map(function(r){return'<tr><td style="font-weight:700;color:'+CC[r.idx%CC.length]+'">'+r.name+'</td><td>'+fmt(r.sales)+' kr</td><td style="color:'+(r.lp>25?"var(--red)":"var(--green)")+'">'+fmtPct(r.lp)+'</td><td style="color:'+(r.wp>1?"var(--red)":"var(--green)")+'">'+fmtPct(r.wp)+'</td><td>'+fmt(r.sph)+' kr</td><td>'+fmt(r.hours)+'</td></tr>';}).join("");
 
   el.innerHTML='<div class="grid"><div class="grid grid-2"><div class="card"><h3>F\u00f6rs\u00e4ljning</h3><div class="chart-wrap"><canvas id="c1"></canvas></div></div><div class="card"><h3>Labor %</h3><div class="chart-wrap"><canvas id="c2"></canvas></div></div></div><div class="card" style="overflow-x:auto"><h3>Detaljerad j\u00e4mf\u00f6relse</h3><table><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Fsg/timme</th><th>Timmar</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 
@@ -515,13 +568,13 @@ function vAbsence(el,data){
   var restDS=sel.map(function(r){var i=ALL_RESTAURANTS.indexOf(r);return{label:r,data:dates.map(function(dt){var rd=ALL_REST[r]&&ALL_REST[r][dt];return rd&&rd.absence?rd.absence:0;}),borderColor:CC[i%CC.length],tension:0.35,pointRadius:1,pointHoverRadius:6,borderWidth:2};});
 
   // Table rows
-  var rows=restAbs.map(function(r){return'<tr><td style="font-weight:700;color:'+CC[r.idx%CC.length]+'">'+r.name+'</td><td>'+fmt(r.absence)+' tim</td><td>'+fmt(r.hours)+' tim</td><td style="color:'+(r.rate>8?"var(--red)":r.rate>5?"var(--amber)":"var(--green)")+'">'+fmtPct(r.rate)+'</td><td>'+r.daysAbsent+' av '+dates.length+'</td></tr>';}).join("");
+  var rows=restAbs.map(function(r){return'<tr><td style="font-weight:700;color:'+CC[r.idx%CC.length]+'">'+r.name+'</td><td>'+fmt(r.absence)+' tim</td><td>'+fmt(r.hours)+' tim</td><td style="color:'+(r.rate>2?"var(--red)":"var(--green)")+'">'+fmtPct(r.rate)+'</td><td>'+r.daysAbsent+' av '+dates.length+'</td></tr>';}).join("");
 
   // Summary stats
   var stats=[
     {l:"Totala sjuktimmar",v:fmt(totalAbs)+" tim",c:totalAbs>0?"var(--red)":"var(--green)"},
     {l:"Totala arbetade timmar",v:fmt(totalHrs)+" tim",c:"var(--teal)"},
-    {l:"Sjukfr\u00e5nvarof\u00f6rkvot",v:fmtPct(totalRate),c:totalRate>8?"var(--red)":totalRate>5?"var(--amber)":"var(--green)"},
+    {l:"Sjukfr\u00e5nvarof\u00f6rkvot",v:fmtPct(totalRate),c:totalRate>2?"var(--red)":"var(--green)"},
     {l:"Dagar i period",v:dates.length+"",c:"var(--dim)"}
   ].map(function(s){return'<div class="stat-row"><span style="font-size:13px;color:var(--muted)">'+s.l+'</span><span style="font-size:15px;font-weight:700;color:'+s.c+'">'+s.v+'</span></div>';}).join("");
 
