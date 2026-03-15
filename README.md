@@ -471,6 +471,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       </div>
       <div id="latestToggleWrap"></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <span id="userRestLabel" style="font-size:12px;color:var(--muted);font-weight:600"></span>
         <span id="adminRestBtn"></span>
       </div>
     </div>
@@ -514,17 +515,31 @@ var saving=false;
 function saveState(){
   if(!currentUser||saving)return;
   saving=true;
-  // Save shared restaurant data to each restaurant doc
-  var batch=db.batch();
-  state.restaurants.forEach(function(r){
+  // Read-then-merge for each restaurant to avoid overwriting other users' data
+  var promises=state.restaurants.map(function(r){
     var rDoc=db.collection("restaurantData").doc(r);
-    var rMonths={};
-    Object.keys(state.months).forEach(function(ym){
-      if(state.months[ym][r]) rMonths[ym]=state.months[ym][r];
+    return rDoc.get().then(function(doc){
+      var existing={};
+      if(doc.exists&&doc.data().months){
+        try{existing=JSON.parse(doc.data().months);}catch(e){}
+      }
+      // Merge local months into existing
+      Object.keys(state.months).forEach(function(ym){
+        if(state.months[ym][r]){
+          if(!existing[ym])existing[ym]={};
+          // Merge day-level data
+          Object.keys(state.months[ym][r]).forEach(function(day){
+            if(!existing[ym][day])existing[ym][day]={};
+            Object.keys(state.months[ym][r][day]).forEach(function(key){
+              existing[ym][day][key]=state.months[ym][r][day][key];
+            });
+          });
+        }
+      });
+      return rDoc.set({months:JSON.stringify(existing)},{merge:true});
     });
-    batch.set(rDoc,{months:JSON.stringify(rMonths)},{merge:true});
   });
-  batch.commit()
+  Promise.all(promises)
     .then(function(){saving=false;})
     .catch(function(e){console.error("Save error:",e);saving=false;});
 }
@@ -1096,6 +1111,13 @@ function render(){
     var page=el.getAttribute("onclick").match(/'(\w+)'/);
     if(page)el.classList.toggle("active",page[1]===currentPage);
   });
+
+  // Update restaurant label in top-right
+  var rl=document.getElementById("userRestLabel");
+  if(rl){
+    if(state.restaurants.length) rl.textContent=state.restaurants.join(", ");
+    else rl.textContent="";
+  }
 
   // Update latest toggle in top-bar (only show on overview)
   var tw=document.getElementById("latestToggleWrap");
