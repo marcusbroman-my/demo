@@ -10,12 +10,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--bg:#0c1117;--card:#151c25;--cardHover:#1a2330;--border:#1e2a36;--text:#e8ecf0;--muted:#8899a6;--dim:#556677;--accent:#C41E3A;--accentD:#8B1528;--accentL:#E8354F;--green:#22C55E;--red:#EF4444;--amber:#F59E0B;--purple:#A855F7;--blue:#3B82F6;--teal:#14B8A6;}
+:root{--bg:#0c1117;--topbar-h:56px;--card:#151c25;--cardHover:#1a2330;--border:#1e2a36;--text:#e8ecf0;--muted:#8899a6;--dim:#556677;--accent:#C41E3A;--accentD:#8B1528;--accentL:#E8354F;--green:#22C55E;--red:#EF4444;--amber:#F59E0B;--purple:#A855F7;--blue:#3B82F6;--teal:#14B8A6;}
 body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-apple-system,sans-serif;min-height:100vh;}
 /* Layout: sidebar + main */
 .dash-layout{display:flex;min-height:100vh;}
-.sidebar{width:210px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;}
-.sidebar-header{padding:16px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.sidebar{width:210px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;overflow-x:hidden;}
+.sidebar-header{padding:0 10px 0 20px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border);height:var(--topbar-h);box-sizing:border-box;flex-shrink:0;}
 .sidebar-brand{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-0.3px;line-height:1.2;}
 .sidebar-brand span{display:block;color:var(--dim);font-weight:500;font-size:10px;margin-left:0;letter-spacing:0.3px;}
 .sidebar-nav{flex:1;padding:12px 10px;}
@@ -25,11 +25,30 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-app
 .sidebar-item.active{background:rgba(196,30,58,0.1);color:var(--accent);}
 .sidebar-item .si-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sidebar-bottom{padding:10px;border-top:1px solid var(--border);margin-top:auto;}
-.sidebar-bottom .sidebar-item{color:var(--dim);font-size:11px;}
-.main-area{margin-left:210px;flex:1;min-height:100vh;}
-.top-bar{padding:14px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--card);}
-.main{padding:24px 28px;max-width:1500px;margin:0 auto;}
-@media(max-width:800px){.sidebar{width:52px;}.sidebar-brand,.sidebar-item span:not(.si-icon),.sidebar-section,.sidebar-bottom span:not(.si-icon){display:none;}.sidebar-header{padding:12px 10px;justify-content:center;}.main-area{margin-left:52px;}.top-bar{padding:12px 16px;}.main{padding:16px;}}
+.sidebar-bottom .sidebar-item{}
+.main-area{margin-left:210px;flex:1;min-height:100vh;min-width:0;overflow-x:hidden;}
+.top-bar{padding:14px 28px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--card);height:var(--topbar-h);box-sizing:border-box;}
+.main{padding:24px 28px;max-width:100%;margin:0 auto;box-sizing:border-box;}
+@media(max-width:800px){.sidebar{width:62px!important;}.sidebar-brand,.sidebar-item span:not(.si-icon),.sidebar-section,.collapse-toggle span:not(.si-icon){opacity:0!important;width:0!important;overflow:hidden!important;}.sidebar-header{justify-content:center!important;}.sidebar-item,.collapse-toggle{justify-content:center!important;padding:9px 0!important;}.main-area{margin-left:62px!important;}.top-bar{padding:12px 16px;}.main{padding:16px;}.collapse-toggle span:not(.si-icon){display:none;}}
+
+/* Sidebar collapse */
+.sidebar{transition:width 0.22s ease;}
+.main-area{transition:margin-left 0.22s ease;}
+.sidebar-brand,.sidebar-item span:not(.si-icon),.sidebar-section{transition:opacity 0.15s ease;white-space:nowrap;overflow:hidden;}
+.collapse-toggle{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;border:none;background:transparent;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;width:100%;text-align:left;margin-top:4px;}
+.collapse-toggle:hover{background:var(--cardHover);color:var(--text);}
+.collapse-toggle .si-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.collapse-toggle svg{transition:transform 0.22s ease;}
+.collapse-toggle span:not(.si-icon){transition:opacity 0.15s ease;white-space:nowrap;overflow:hidden;}
+.sidebar.collapsed{width:62px;}
+.sidebar.collapsed .sidebar-brand,.sidebar.collapsed .sidebar-item span:not(.si-icon),.sidebar.collapsed .sidebar-section,.sidebar.collapsed .collapse-toggle span:not(.si-icon){opacity:0;width:0;overflow:hidden;}
+.sidebar.collapsed .sidebar-header{justify-content:center;}
+.sidebar.collapsed+.main-area{margin-left:62px;}
+.sidebar.collapsed .sidebar-nav{padding:12px 8px;}
+.sidebar.collapsed .sidebar-bottom{padding:10px 8px;}
+.sidebar.collapsed .sidebar-item,.sidebar.collapsed .collapse-toggle{justify-content:center;padding:9px 0;}
+.sidebar.collapsed .settings-menu{left:62px;}
+.sidebar.collapsed .collapse-toggle svg{transform:rotate(180deg);}
 /* KPI */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px;}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px;}
@@ -41,11 +60,11 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-app
 .kpi-unit{font-size:14px;font-weight:600;color:var(--dim);margin-left:4px;}
 .kpi-sub{font-size:12px;color:var(--dim);margin-top:6px;font-weight:500;}
 /* Cards */
-.grid{display:grid;gap:16px;}.grid-2{grid-template-columns:1fr 1fr;}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.grid{display:grid;gap:16px;min-width:0;}.grid-2{grid-template-columns:1fr 1fr;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;min-width:0;overflow:hidden;}
 .card-full{grid-column:1 / -1;}
 .card h3{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;font-weight:700;}
-.chart-wrap{position:relative;width:100%;height:280px;}
+.chart-wrap{position:relative;width:100%;height:280px;min-width:0;}
 .chart-wrap.tall{height:360px;}
 /* Table input */
 table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -70,6 +89,7 @@ td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 .settings-item{display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.1s;}
 .settings-item:hover{background:var(--cardHover);color:var(--text);}
 .settings-item.danger{color:var(--red);}
+.settings-theme-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);}
 .settings-item.danger:hover{background:rgba(239,68,68,0.06);}
 /* Profile panel */
 .profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -77,6 +97,11 @@ td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 .profile-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.97);transition:transform 0.25s;}
 .profile-overlay.open .profile-box{transform:translateY(0) scale(1);}
 .profile-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;}
+.profile-pic-section{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.profile-pic{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--border);background:var(--bg);}
+.profile-pic-placeholder{width:64px;height:64px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;border:2px solid var(--border);flex-shrink:0;}
+.profile-pic-btn{font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 0;}
+.profile-pic-btn:hover{text-decoration:underline;}
 .profile-field{margin-bottom:16px;}
 .profile-field .pf-label{font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
 .profile-field .pf-value{font-size:15px;font-weight:600;color:var(--text);padding:8px 0;}
@@ -150,10 +175,65 @@ td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 .form-group input::placeholder{color:var(--dim);font-weight:400;}
 .form-group.full{grid-column:1 / -1;}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
-td.day-label{font-weight:700;color:var(--teal);white-space:nowrap;width:80px;}
+td.day-label{font-weight:700;color:var(--text);white-space:nowrap;width:80px;}
+td.day-label.weekend{color:var(--accent);}
 td.weekend{background:rgba(196,30,58,0.04);}
+td.fc-lc{font-weight:700;font-size:13px;white-space:nowrap;min-width:60px;text-align:center;}
+td.fc-lc.good{color:var(--green);}
+td.fc-lc.bad{color:var(--red);}
+.fc-summary{display:flex;gap:28px;flex-wrap:wrap;padding:18px 0 6px;margin-top:12px;border-top:1px solid var(--border);}
+.fc-summary-item{display:flex;flex-direction:column;gap:2px;}
+.fc-summary-item .fc-label{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+.fc-summary-item .fc-value{font-size:22px;font-weight:800;color:var(--text);line-height:1.2;}
+.fc-summary-item .fc-value.good{color:var(--green);}
+.fc-summary-item .fc-value.bad{color:var(--red);}
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-radius:10px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px;}
 .footer{text-align:center;margin-top:28px;padding-bottom:24px;font-size:11px;color:var(--dim);font-weight:500;}
+
+/* Chat */
+.chat-layout{display:flex;gap:0;height:calc(100vh - var(--topbar-h) - 1px);margin:-24px -28px;overflow:hidden;}
+.chat-sidebar{width:300px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;background:var(--card);}
+.chat-sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.chat-sidebar-head h3{font-size:14px;font-weight:800;color:var(--text);margin:0;}
+.chat-new-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;transition:all 0.15s;}
+.chat-new-btn:hover{color:var(--text);background:var(--cardHover);}
+.chat-convos{flex:1;overflow-y:auto;}
+.chat-convo{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(30,42,54,0.2);transition:background 0.1s;}
+.chat-convo:hover{background:var(--cardHover);}
+.chat-convo.active{background:rgba(196,30,58,0.08);}
+.chat-convo.unread .chat-convo-name{font-weight:800;color:var(--text);}
+.chat-convo.unread .chat-convo-preview{color:var(--text);}
+img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-shrink:0;}
+.chat-avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;text-transform:uppercase;}
+.chat-convo-info{flex:1;min-width:0;}
+.chat-convo-top{display:flex;justify-content:space-between;align-items:center;}
+.chat-convo-name{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chat-convo-time{font-size:10px;color:var(--dim);flex-shrink:0;margin-left:8px;}
+.chat-convo-preview{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.chat-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+.chat-header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.chat-header-name{font-size:14px;font-weight:700;color:var(--text);}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:4px;}
+.chat-date-sep{text-align:center;padding:12px 0 6px;font-size:11px;color:var(--dim);font-weight:600;}
+.chat-bubble-wrap{display:flex;margin-bottom:2px;}
+.chat-bubble-wrap.me{justify-content:flex-end;}
+.chat-bubble{max-width:70%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.55;word-wrap:break-word;position:relative;}
+.chat-bubble.them{background:var(--card);color:var(--text);border-bottom-left-radius:4px;}
+.chat-bubble.me{background:var(--accent);color:#fff;border-bottom-right-radius:4px;}
+.chat-bubble-time{font-size:9px;opacity:0.6;margin-top:4px;display:block;}
+.chat-input-area{padding:12px 16px;border-top:1px solid var(--border);background:var(--card);flex-shrink:0;display:flex;gap:10px;align-items:flex-end;}
+.chat-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:20px;color:var(--text);padding:10px 16px;font-size:13px;font-family:inherit;outline:none;resize:none;max-height:120px;line-height:1.4;transition:border 0.15s;}
+.chat-input:focus{border-color:var(--accent);}
+.chat-send-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.15s;}
+.chat-send-btn:hover{background:var(--accentL);}
+.chat-empty{display:flex;align-items:center;justify-content:center;flex:1;color:var(--dim);font-size:14px;font-weight:500;}
+.chat-new-form{padding:20px;display:flex;flex-direction:column;gap:12px;}
+.chat-new-form label{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;}
+.chat-new-form input{background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;transition:border 0.15s;}
+.chat-new-form input:focus{border-color:var(--accent);}
+.msg-badge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;}
+.msg-nav-wrap{position:relative;}
+@media(max-width:700px){.chat-sidebar{width:100%;}.chat-main{display:none;}.chat-layout.conv-open .chat-sidebar{display:none;}.chat-layout.conv-open .chat-main{display:flex;}}
 /* Logo */
 .logo-img{width:30px;height:30px;border-radius:50%;object-fit:cover;}
 /* Custom month picker */
@@ -277,6 +357,14 @@ td.weekend{background:rgba(196,30,58,0.04);}
 <div class="profile-overlay" id="profileOverlay" onclick="if(event.target===this)closeProfile()">
   <div class="profile-box">
     <div class="profile-title">Min profil</div>
+    <div class="profile-pic-section">
+      <div id="profilePicWrap"></div>
+      <div>
+        <button class="profile-pic-btn" onclick="document.getElementById('profilePicInput').click()">Byt profilbild</button>
+        <div style="font-size:10px;color:var(--dim);margin-top:2px">Max 200 KB, visas för andra i chatten</div>
+      </div>
+      <input type="file" id="profilePicInput" accept="image/*" style="display:none" onchange="uploadProfilePic(event)">
+    </div>
     <div class="profile-field">
       <div class="pf-label">Namn</div>
       <div class="pf-value" id="profileName">—</div>
@@ -305,12 +393,15 @@ td.weekend{background:rgba(196,30,58,0.04);}
       <button class="sidebar-item active" onclick="switchPage('overview')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span>Översikt</span></button>
       <button class="sidebar-item" onclick="switchPage('results')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span><span>Resultat</span></button>
       <button class="sidebar-item" onclick="switchPage('forecast')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Prognos</span></button>
+      <div class="msg-nav-wrap"><button class="sidebar-item" onclick="switchPage('messages')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span>Chatt</span></button><span class="msg-badge" id="msgBadge" style="display:none">0</span></div>
     </div>
     <div class="sidebar-bottom">
+      <button class="collapse-toggle" onclick="toggleSidebar()" title="Fäll ihop sidofält"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></span><span>Fäll ihop</span></button>
       <div class="settings-wrap" style="width:100%">
         <button class="sidebar-item" id="settingsBtn" onclick="toggleSettings()"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span><span>Inställningar</span></button>
         <div class="settings-menu" id="settingsMenu">
           <div class="settings-name" id="settingsName">...</div>
+          <div class="settings-theme-row"><span>Tema</span><div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Byt tema"><div class="tt-track"><span>☾</span><span>☀</span></div><div class="tt-knob dark" id="ttKnob">☾</div></div></div>
           <button class="settings-item" onclick="openProfile();closeSettings()">Redigera profil</button>
           <button class="settings-item danger" onclick="doLogout();closeSettings()">Logga ut</button>
         </div>
@@ -338,7 +429,6 @@ td.weekend{background:rgba(196,30,58,0.04);}
       <div id="latestToggleWrap"></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         <button class="btn btn-outline" onclick="addRestaurantPrompt()">Lägg till restaurang</button>
-        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Byt tema"><div class="tt-track"><span>☾</span><span>☀</span></div><div class="tt-knob dark" id="ttKnob">☾</div></div>
       </div>
     </div>
     <div class="main">
@@ -425,7 +515,7 @@ function doLogin(){
   if(isSignUp){
     auth.createUserWithEmailAndPassword(email,pass).then(function(cred){
       saveRemember(email,pass);
-      return db.collection("users").doc(cred.user.uid).set({displayName:document.getElementById("loginName").value.trim()},{merge:true});
+      return db.collection("users").doc(cred.user.uid).set({displayName:document.getElementById("loginName").value.trim(),email:cred.user.email},{merge:true});
     }).catch(function(e){
       btn.disabled=false;
       btn.textContent="Skapa konto";
@@ -473,10 +563,61 @@ function showDashboard(){
 // ========== PROFILE ==========
 var cachedDisplayName="";
 
+var cachedProfilePic="";
+
+function loadProfilePic(){
+  if(!currentUser)return Promise.resolve();
+  return db.collection("users").doc(currentUser.uid).get().then(function(doc){
+    cachedProfilePic=(doc.exists&&doc.data().profilePic)?doc.data().profilePic:"";
+  });
+}
+
+function renderProfilePic(){
+  var wrap=document.getElementById("profilePicWrap");
+  if(!wrap)return;
+  if(cachedProfilePic){
+    wrap.innerHTML='<img class="profile-pic" src="'+cachedProfilePic+'" alt="Profil">';
+  } else {
+    var init=getInitials(cachedDisplayName||currentUser.email);
+    wrap.innerHTML='<div class="profile-pic-placeholder">'+init+'</div>';
+  }
+}
+
+function uploadProfilePic(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  if(file.size>200*1024){showCustomModal("Bilden är för stor. Max 200 KB.","",false);return;}
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var dataUrl=ev.target.result;
+    // Resize to max 128px to keep Firestore doc small
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement("canvas");
+      var size=128;
+      canvas.width=size;canvas.height=size;
+      var ctx=canvas.getContext("2d");
+      var sx=0,sy=0,sw=img.width,sh=img.height;
+      if(sw>sh){sx=(sw-sh)/2;sw=sh;}else{sy=(sh-sw)/2;sh=sw;}
+      ctx.drawImage(img,sx,sy,sw,sh,0,0,size,size);
+      var small=canvas.toDataURL("image/jpeg",0.7);
+      db.collection("users").doc(currentUser.uid).set({profilePic:small},{merge:true}).then(function(){
+        cachedProfilePic=small;
+        renderProfilePic();
+      }).catch(function(err){showCustomModal("Kunde inte spara: "+err.message,"",false);});
+    };
+    img.src=dataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+
 function loadUserName(){
   if(!currentUser)return Promise.resolve();
   return db.collection("users").doc(currentUser.uid).get().then(function(doc){
     cachedDisplayName=(doc.exists&&doc.data().displayName)?doc.data().displayName:"";
+    // Ensure email is stored for name lookup by other users
+    db.collection("users").doc(currentUser.uid).set({email:currentUser.email},{merge:true}).catch(function(){});
     var el=document.getElementById("settingsName");
     if(el)el.textContent=cachedDisplayName||currentUser.email;
   });
@@ -485,6 +626,7 @@ function loadUserName(){
 function openProfile(){
   document.getElementById("profileName").textContent=cachedDisplayName||"Ej angivet";
   document.getElementById("profileEmail").textContent=currentUser?currentUser.email:"";
+  renderProfilePic();
   document.getElementById("profileOverlay").classList.add("open");
 }
 function closeProfile(){
@@ -602,7 +744,7 @@ function showLogin(){
 auth.onAuthStateChanged(function(user){
   if(user){
     currentUser=user;
-    loadState().then(function(){
+    loadState().then(function(){return loadMessages();}).then(function(){return loadProfilePic();}).then(function(){
       var now=new Date();
       currentMonth=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
       mpYear=now.getFullYear();
@@ -778,6 +920,21 @@ document.addEventListener("click",function(e){
   var wrap=document.querySelector(".mp-wrap");
   if(wrap&&!wrap.contains(e.target))closeMonthPicker();
 });
+
+
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  sb.classList.toggle('collapsed');
+  localStorage.setItem('sidebarCollapsed',sb.classList.contains('collapsed')?'1':'0');
+  setTimeout(function(){window.dispatchEvent(new Event('resize'));},250);
+}
+// Restore sidebar state on load
+(function(){
+  if(localStorage.getItem('sidebarCollapsed')==='1'){
+    const sb=document.querySelector('.sidebar');
+    if(sb) sb.classList.add('collapsed');
+  }
+})();
 
 function switchPage(p){selectedDay=0;currentPage=p;render();}
 
@@ -969,6 +1126,7 @@ function render(){
   ensureMonth(currentMonth);
   var nd=daysInMonth(currentMonth);
 
+  if(currentPage==="messages"){renderMessages();return;}
   if(currentPage==="forecast")renderForecast(nd);
   else if(currentPage==="results")renderResults(nd);
   else if(currentPage==="overview")renderOverview(nd);
@@ -992,18 +1150,57 @@ function renderForecast(nd){
   html+='<div class="actions"><button class="btn btn-primary" onclick="savePage()">Spara</button><span class="save-msg" id="saveMsg">\u2713 Sparat</span><div class="actions-right"><button class="btn btn-outline btn-icon" onclick="triggerImport(\'forecast\')">\u2191 Importera</button><button class="btn btn-outline btn-icon" onclick="exportCSV(\'forecast\')">\u2193 M\u00e5nad</button><button class="btn btn-outline btn-icon" onclick="exportAllCSV(\'forecast\')">\u2193 Alla</button><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div></div>';
 
   html+='<div class="card" style="overflow-x:auto"><h3>'+rest+' &mdash; Prognos</h3>';
-  html+='<table><thead><tr><th>Dag</th><th>FC F\u00f6rs\u00e4ljning (kr)</th><th>FC Labor Cost (kr)</th></tr></thead><tbody>';
+  html+='<table><thead><tr><th>Dag</th><th>FC F\u00f6rs\u00e4ljning (kr)</th><th>FC Labor Cost (kr)</th><th>LC %</th></tr></thead><tbody>';
   for(var d=1;d<=nd;d++){
     var dn=dayName(currentMonth,d);var we=isWeekend(currentMonth,d);
-    var cls=we?' class="weekend"':'';
-    html+='<tr><td class="day-label"'+cls+'>'+d+' '+dn+'</td>';
-    html+='<td'+cls+'><input type="number" id="fc_s_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcSales")||"")+'" placeholder="0"></td>';
-    html+='<td'+cls+'><input type="number" id="fc_l_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcLabor")||"")+'" placeholder="0"></td>';
+    var weCls=we?' weekend':'';
+    html+='<tr><td class="day-label'+weCls+'">'+d+' '+dn+'</td>';
+    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_s_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcSales")||"")+'" placeholder="0" oninput="updateFcLc()"></td>';
+    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_l_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcLabor")||"")+'" placeholder="0" oninput="updateFcLc()"></td>';
+    html+='<td class="fc-lc" id="fc_lc_'+ri+'_'+d+'">—</td>';
+    html+='</tr>';
   }
-  html+='</tbody></table></div>';
+  html+='</tbody></table>';
+  html+='<div class="fc-summary" id="fcSummary"></div>';
+  html+='</div>';
 
   document.getElementById("kpis").innerHTML="";
   document.getElementById("content").innerHTML=html;
+  updateFcLc();
+}
+
+function updateFcLc(){
+  var nd=daysInMonth(currentMonth);
+  var ri=state.restaurants.indexOf(selectedRest);
+  var totalSales=0,totalLabor=0;
+  for(var d=1;d<=nd;d++){
+    var sEl=document.getElementById("fc_s_"+ri+"_"+d);
+    var lEl=document.getElementById("fc_l_"+ri+"_"+d);
+    var lcEl=document.getElementById("fc_lc_"+ri+"_"+d);
+    if(!sEl||!lEl||!lcEl)continue;
+    var s=parseFloat(sEl.value)||0;
+    var l=parseFloat(lEl.value)||0;
+    totalSales+=s;totalLabor+=l;
+    if(s>0&&l>0){
+      var pct=(l/s*100);
+      lcEl.textContent=pct.toFixed(1)+"%";
+      lcEl.className="fc-lc "+(pct<=25?"good":"bad");
+    }else{
+      lcEl.textContent="\u2014";
+      lcEl.className="fc-lc";
+    }
+  }
+  // Update summary
+  var sumEl=document.getElementById("fcSummary");
+  if(!sumEl)return;
+  var lcTotal=(totalSales>0)?(totalLabor/totalSales*100):0;
+  var lcCls=(totalSales>0&&totalLabor>0)?(lcTotal<=25?"good":"bad"):"";
+  var fmtSales=totalSales?Math.round(totalSales).toLocaleString("sv-SE"):"0";
+  var fmtLabor=totalLabor?Math.round(totalLabor).toLocaleString("sv-SE"):"0";
+  var fmtLc=(totalSales>0&&totalLabor>0)?lcTotal.toFixed(1)+"%":"\u2014";
+  sumEl.innerHTML='<div class="fc-summary-item"><span class="fc-label">Total FC F\u00f6rs\u00e4ljning</span><span class="fc-value">'+fmtSales+' kr</span></div>'
+    +'<div class="fc-summary-item"><span class="fc-label">Total FC Labor Cost</span><span class="fc-value">'+fmtLabor+' kr</span></div>'
+    +'<div class="fc-summary-item"><span class="fc-label">LC %</span><span class="fc-value '+lcCls+'">'+fmtLc+'</span></div>';
 }
 
 // ========== PAGE: RESULTAT ==========
@@ -1291,6 +1488,252 @@ function renderOverview(nd){
   makeChart("c6",{type:"line",data:{labels:labels,datasets:[{label:"TT (sek)",data:dailyTT,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
   makeChart("c7",{type:"bar",data:{labels:labels,datasets:[{label:"Sjuktimmar",data:dailyAbs,backgroundColor:"#EF4444",borderRadius:4}]}});
 }
+
+
+
+// ========== PAGE: CHATT ==========
+var chatConvos=[];   // [{email,name,lastMsg,lastTs,unread}]
+var chatMessages=[];  // current convo messages
+var chatOpenEmail=null;
+var chatShowNewForm=false;
+
+function chatKey(a,b){return [a,b].sort().join('|');}
+
+var chatNameCache={}; // email -> displayName
+var chatPicCache={}; // email -> profilePic dataUrl
+
+function lookupNameByEmail(email){
+  if(chatNameCache[email])return Promise.resolve(chatNameCache[email]);
+  return db.collection("users").where("email","==",email).limit(1).get().then(function(snap){
+    var name=email;
+    snap.forEach(function(doc){var d=doc.data();if(d.displayName)name=d.displayName;if(d.profilePic)chatPicCache[email]=d.profilePic;});
+    chatNameCache[email]=name;
+    return name;
+  }).catch(function(){return email;});
+}
+
+function loadMessages(){
+  if(!currentUser)return Promise.resolve();
+  var me=currentUser.email;
+  var p1=db.collection("messages").where("to","==",me).limit(500).get().catch(function(e){console.error("Chat load to:",e);return{forEach:function(){}};});
+  var p2=db.collection("messages").where("from","==",me).limit(500).get().catch(function(e){console.error("Chat load from:",e);return{forEach:function(){}};});
+  return Promise.all([p1,p2]).then(function(results){
+    var all=[];
+    results[0].forEach(function(doc){var d=doc.data();d.id=doc.id;all.push(d);});
+    results[1].forEach(function(doc){var d=doc.data();d.id=doc.id;all.push(d);});
+    // Dedupe by id
+    var seen={};
+    all=all.filter(function(m){if(!m.id||seen[m.id])return false;seen[m.id]=true;return true;});
+    // Collect pending/recently-sent messages from current local state
+    var pending=[];
+    chatConvos.forEach(function(c){
+      c.msgs.forEach(function(m){
+        if(m.id&&(m.id.indexOf("_pending_")===0||m.id.indexOf("_sent_")===0))pending.push({msg:m,email:c.email});
+      });
+    });
+    // Build conversations
+    var convMap={};
+    all.forEach(function(m){
+      var other=(m.from===me)?m.to:m.from;
+      var otherName=(m.from===me)?m.to:(m.fromName||m.from);
+      if(!convMap[other])convMap[other]={email:other,name:otherName,lastMsg:"",lastTs:0,unread:0,msgs:[]};
+      var ts=m.ts?(m.ts.seconds?m.ts.seconds*1000:(typeof m.ts==='number'?m.ts:0)):0;
+      convMap[other].msgs.push({from:m.from,fromName:m.fromName||m.from,body:m.body||"",ts:ts,read:m.read,id:m.id});
+      if(ts>convMap[other].lastTs){convMap[other].lastTs=ts;convMap[other].lastMsg=(m.body||"").substring(0,50);convMap[other].name=otherName;}
+      if(m.to===me&&!m.read)convMap[other].unread++;
+    });
+    // Re-add pending messages if their body isn't already in Firestore results
+    pending.forEach(function(p){
+      var conv=convMap[p.email];
+      if(!conv){
+        var cname=chatNameCache[p.email]||p.email;
+        conv={email:p.email,name:cname,lastMsg:"",lastTs:0,unread:0,msgs:[]};
+        convMap[p.email]=conv;
+      }
+      var alreadySynced=conv.msgs.some(function(m2){return m2.body===p.msg.body&&m2.from===p.msg.from&&Math.abs(m2.ts-p.msg.ts)<10000;});
+      if(!alreadySynced){
+        conv.msgs.push(p.msg);
+        if(p.msg.ts>conv.lastTs){conv.lastTs=p.msg.ts;conv.lastMsg=(p.msg.body||"").substring(0,50);}
+      }
+    });
+    chatConvos=Object.values(convMap);
+    chatConvos.sort(function(a,b){return b.lastTs-a.lastTs;});
+    chatConvos.forEach(function(c){c.msgs.sort(function(a,b){return a.ts-b.ts;});});
+    // Look up display names for all conversation partners
+    var lookups=chatConvos.map(function(c){
+      return lookupNameByEmail(c.email).then(function(name){c.name=name;});
+    });
+    return Promise.all(lookups).then(function(){updateMsgBadge();});
+  });
+}
+
+function updateMsgBadge(){
+  var total=0;chatConvos.forEach(function(c){total+=c.unread;});
+  var badge=document.getElementById("msgBadge");
+  if(badge){if(total>0){badge.textContent=total;badge.style.display="flex";}else{badge.style.display="none";}}
+}
+
+function getInitials(name){
+  if(!name)return"?";
+  var parts=name.replace(/@.*/,"").split(/[\s._-]+/);
+  if(parts.length>=2)return(parts[0][0]+parts[1][0]).toUpperCase();
+  return name.substring(0,2).toUpperCase();
+}
+
+var avatarColors=["#C41E3A","#A855F7","#3B82F6","#14B8A6","#F59E0B","#EF4444","#22C55E","#6366F1"];
+function avatarColor(email){var h=0;for(var i=0;i<email.length;i++){h=email.charCodeAt(i)+((h<<5)-h);}return avatarColors[Math.abs(h)%avatarColors.length];}
+
+function escH(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function renderMessages(){
+  document.getElementById("kpis").innerHTML="";
+  var me=currentUser.email;
+  var h='<div class="chat-layout'+(chatOpenEmail?' conv-open':'')+'" id="chatLayout">';
+
+  // === Left sidebar: conversation list ===
+  h+='<div class="chat-sidebar">';
+  h+='<div class="chat-sidebar-head"><h3>Chatt</h3>';
+  h+='<button class="chat-new-btn" onclick="chatShowNewForm=!chatShowNewForm;chatOpenEmail=null;renderMessages()" title="Ny konversation"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>';
+  h+='</div>';
+  h+='<div class="chat-convos">';
+  if(chatConvos.length===0&&!chatShowNewForm){
+    h+='<div class="chat-empty" style="padding:40px 16px;font-size:12px">Inga konversationer ännu.<br>Tryck + för att starta en.</div>';
+  }
+  chatConvos.forEach(function(c){
+    var active=(c.email===chatOpenEmail)?" active":"";
+    var unread=c.unread>0?" unread":"";
+    var ts=c.lastTs?new Date(c.lastTs).toLocaleDateString("sv-SE",{month:"short",day:"numeric"}):"";
+    h+='<div class="chat-convo'+active+unread+'" onclick="openConvo(\''+escH(c.email.replace(/'/g,"\\'"))+'\')">';
+    h+=chatPicCache[c.email]?'<img class="chat-avatar" style="border:0" src="'+chatPicCache[c.email]+'">':'<div class="chat-avatar" style="background:'+avatarColor(c.email)+'">'+getInitials(c.name)+'</div>';
+    h+='<div class="chat-convo-info"><div class="chat-convo-top"><span class="chat-convo-name">'+escH(c.name)+'</span><span class="chat-convo-time">'+ts+'</span></div>';
+    h+='<div class="chat-convo-preview">'+escH(c.lastMsg)+'</div></div></div>';
+  });
+  h+='</div></div>';
+
+  // === Right: chat view ===
+  h+='<div class="chat-main">';
+  if(chatShowNewForm){
+    h+='<div class="chat-header"><div class="chat-header-name">Ny konversation</div></div>';
+    h+='<div class="chat-new-form">';
+    h+='<label>Skriv e-postadressen till din kollega</label>';
+    h+='<input type="email" id="chatNewEmail" placeholder="kollega@example.com" onkeydown="if(event.key===\'Enter\')startNewConvo()">';
+    h+='<button class="btn btn-primary" onclick="startNewConvo()">Starta chatt</button>';
+    h+='</div>';
+  } else if(chatOpenEmail){
+    var conv=chatConvos.find(function(c){return c.email===chatOpenEmail;});
+    var displayName=conv?conv.name:(chatNameCache[chatOpenEmail]||chatOpenEmail);
+    h+='<div class="chat-header">';
+    h+=chatPicCache[chatOpenEmail]?'<img class="chat-avatar" style="width:32px;height:32px;border:0" src="'+chatPicCache[chatOpenEmail]+'">':'<div class="chat-avatar" style="width:32px;height:32px;font-size:12px;background:'+avatarColor(chatOpenEmail)+'">'+getInitials(displayName)+'</div>';
+    h+='<div class="chat-header-name">'+escH(displayName)+'</div></div>';
+    h+='<div class="chat-messages" id="chatMsgScroll">';
+    if(conv&&conv.msgs.length){
+      var lastDate="";
+      conv.msgs.forEach(function(m){
+        var d=new Date(m.ts);
+        var dateStr=d.toLocaleDateString("sv-SE",{year:"numeric",month:"long",day:"numeric"});
+        if(dateStr!==lastDate){h+='<div class="chat-date-sep">'+dateStr+'</div>';lastDate=dateStr;}
+        var isMe=m.from===me;
+        var timeStr=d.toLocaleTimeString("sv-SE",{hour:"2-digit",minute:"2-digit"});
+        h+='<div class="chat-bubble-wrap'+(isMe?" me":"")+'">';
+        h+='<div class="chat-bubble'+(isMe?" me":" them")+'">'+escH(m.body)+'<span class="chat-bubble-time">'+timeStr+'</span></div></div>';
+      });
+    } else {
+      h+='<div class="chat-empty">Skicka ett meddelande för att starta konversationen</div>';
+    }
+    h+='</div>';
+    h+='<div class="chat-input-area">';
+    h+='<textarea class="chat-input" id="chatInput" rows="1" placeholder="Skriv ett meddelande..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>';
+    h+='<button class="chat-send-btn" onclick="sendChat()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>';
+    h+='</div>';
+  } else {
+    h+='<div class="chat-empty">Välj en konversation eller starta en ny</div>';
+  }
+  h+='</div></div>';
+  document.getElementById("content").innerHTML=h;
+  // Scroll to bottom
+  var sc=document.getElementById("chatMsgScroll");
+  if(sc)sc.scrollTop=sc.scrollHeight;
+}
+
+function openConvo(email){
+  chatOpenEmail=email;
+  chatShowNewForm=false;
+  // Mark all as read
+  var conv=chatConvos.find(function(c){return c.email===email;});
+  if(conv){
+    conv.msgs.forEach(function(m){
+      if(!m.read&&m.from===email){
+        db.collection("messages").doc(m.id).update({read:true}).catch(function(){});
+        m.read=true;
+      }
+    });
+    conv.unread=0;
+    updateMsgBadge();
+  }
+  renderMessages();
+}
+
+function startNewConvo(){
+  var el=document.getElementById("chatNewEmail");
+  var email=(el?el.value:"").trim().toLowerCase();
+  if(!email||!email.includes("@")){showCustomModal("Ange en giltig e-postadress","",false);return;}
+  chatShowNewForm=false;
+  // Look up name before opening
+  lookupNameByEmail(email).then(function(){
+    chatOpenEmail=email;
+    renderMessages();
+  });
+}
+
+function sendChat(){
+  var input=document.getElementById("chatInput");
+  var body=(input?input.value:"").trim();
+  if(!body||!chatOpenEmail)return;
+  input.value="";
+  var me=currentUser.email;
+  var msg={
+    from:me,
+    fromName:cachedDisplayName||me,
+    to:chatOpenEmail,
+    body:body,
+    ts:firebase.firestore.FieldValue.serverTimestamp(),
+    read:false
+  };
+  // Optimistic: add to local immediately
+  var conv=chatConvos.find(function(c){return c.email===chatOpenEmail;});
+  var now=Date.now();
+  if(!conv){
+    var cname=chatNameCache[chatOpenEmail]||chatOpenEmail;
+    conv={email:chatOpenEmail,name:cname,lastMsg:body.substring(0,50),lastTs:now,unread:0,msgs:[]};
+    chatConvos.unshift(conv);
+  }
+  conv.msgs.push({from:me,fromName:cachedDisplayName||me,body:body,ts:now,read:true,id:"_pending_"+now});
+  conv.lastMsg=body.substring(0,50);
+  conv.lastTs=now;
+  renderMessages();
+  // Save to Firestore
+  db.collection("messages").add(msg).then(function(){
+    // Remove pending flag - next loadMessages will pick it up from Firestore
+    conv.msgs.forEach(function(m2){if(m2.id==="_pending_"+now)m2.id="_sent_"+now;});
+  }).catch(function(err){
+    console.error("Send failed:",err);
+    showCustomModal("Kunde inte skicka: "+err.message,"",false);
+  });
+}
+
+// Periodically check for new messages
+setInterval(function(){
+  if(!currentUser)return;
+  // Don't refresh if user is actively typing or composing
+  if(currentPage==="messages"){
+    if(chatShowNewForm)return;
+    var inp=document.getElementById("chatInput");
+    if(inp&&document.activeElement===inp)return;
+  }
+  loadMessages().then(function(){
+    if(currentPage==="messages")renderMessages();
+  });
+},3000);
 
 
 // ========== INIT ==========
