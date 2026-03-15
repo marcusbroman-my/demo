@@ -118,6 +118,49 @@ td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 /* Slay button */
 .slay-btn{width:42px;height:42px;border-radius:50%;border:2px solid rgba(236,72,153,0.4);background:rgba(236,72,153,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;z-index:100;transition:all 0.2s;margin:20px 0 10px auto;}
 .slay-btn:hover{transform:scale(1.1);border-color:rgba(236,72,153,0.7);background:rgba(236,72,153,0.15);}
+/* Notification bell */
+.notif-wrap{position:relative;}
+.notif-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;position:relative;}
+.notif-btn:hover{background:var(--cardHover);color:var(--text);}
+.notif-btn .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);display:none;}
+.notif-btn .notif-dot.show{display:block;}
+.notif-dropdown{position:absolute;top:100%;right:0;width:340px;max-height:420px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.3);display:none;z-index:200;overflow:hidden;}
+.notif-dropdown.open{display:block;}
+.notif-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);}
+.notif-list{overflow-y:auto;max-height:360px;}
+.notif-item{padding:10px 16px;border-bottom:1px solid rgba(30,42,54,0.15);cursor:pointer;transition:background 0.1s;display:flex;gap:10px;align-items:flex-start;}
+.notif-item:hover{background:var(--cardHover);}
+.notif-item.unread{background:rgba(196,30,58,0.04);}
+.notif-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+.notif-icon.chat{background:rgba(59,130,246,0.12);color:#3B82F6;}
+.notif-icon.reminder{background:rgba(245,158,11,0.12);color:#F59E0B;}
+.notif-icon.result{background:rgba(34,197,94,0.12);color:#22C55E;}
+.notif-body{flex:1;min-width:0;}
+.notif-title{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.notif-desc{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.notif-time{font-size:10px;color:var(--dim);margin-top:3px;}
+.notif-empty{padding:40px 16px;text-align:center;color:var(--dim);font-size:12px;font-weight:500;}
+/* Restaurant management overlay */
+.restmgr-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.restmgr-overlay.open{opacity:1;pointer-events:auto;}
+.restmgr-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.97);transition:transform 0.25s;}
+.restmgr-overlay.open .restmgr-box{transform:translateY(0) scale(1);}
+.restmgr-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;}
+.restmgr-rest{margin-bottom:20px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border);}
+.restmgr-rest-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.restmgr-color-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);cursor:pointer;flex-shrink:0;transition:transform 0.15s;}
+.restmgr-color-dot:hover{transform:scale(1.15);}
+.restmgr-rest-name{font-size:15px;font-weight:700;color:var(--text);flex:1;}
+.restmgr-color-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;padding-left:30px;}
+.restmgr-color-opt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+.restmgr-color-opt:hover{transform:scale(1.15);}
+.restmgr-color-opt.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--bg);}
+.restmgr-members{padding-left:30px;}
+.restmgr-member{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px;color:var(--muted);}
+.restmgr-member span{flex:1;}
+.restmgr-add-row{display:flex;gap:6px;margin-top:8px;padding-left:30px;}
+.restmgr-add-row input{flex:1;padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:inherit;outline:none;}
+.restmgr-add-row input:focus{border-color:var(--accent);}
 /* Latest day toggle */
 .latest-toggle{display:inline-flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
 .latest-toggle button{padding:6px 12px;border:none;background:transparent;color:var(--dim);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
@@ -422,6 +465,14 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
     </div>
   </div>
 </div>
+<!-- RESTAURANT MANAGEMENT -->
+<div class="restmgr-overlay" id="restmgrOverlay" onclick="if(event.target===this)closeRestMgr()">
+  <div class="restmgr-box">
+    <div class="restmgr-title">Hantera restauranger</div>
+    <div id="restmgrContent"></div>
+    <div style="margin-top:16px;text-align:right"><button class="btn btn-outline" onclick="closeRestMgr()">St\u00e4ng</button></div>
+  </div>
+</div>
 <!-- DASHBOARD -->
 <div id="dashWrap">
 <div class="dash-layout">
@@ -446,6 +497,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
           <div class="settings-name" id="settingsName">...</div>
           <div class="settings-theme-row"><span>Tema</span><div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Byt tema"><div class="tt-track"><span>☾</span><span>☀</span></div><div class="tt-knob dark" id="ttKnob">☾</div></div></div>
           <button class="settings-item" onclick="openProfile();closeSettings()">Redigera profil</button>
+          <button class="settings-item" id="settingsRestMgr" style="display:none" onclick="openRestMgr();closeSettings()">Hantera restauranger</button>
           <button class="settings-item danger" onclick="doLogout();closeSettings()">Logga ut</button>
         </div>
       </div>
@@ -472,6 +524,13 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       <div id="latestToggleWrap"></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         <span id="userRestLabel" style="font-size:12px;color:var(--muted);font-weight:600"></span>
+        <div class="notif-wrap">
+          <button class="notif-btn" onclick="toggleNotifDropdown()" title="Notifikationer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="notif-dot" id="notifDot"></span></button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-header">Notifikationer</div>
+            <div class="notif-list" id="notifList"><div class="notif-empty">Inga notifikationer</div></div>
+          </div>
+        </div>
         <span id="adminRestBtn"></span>
       </div>
     </div>
@@ -666,6 +725,11 @@ function showDashboard(){
     if(isAdmin) abtn.innerHTML='<button class="btn btn-outline" onclick="addRestaurantPrompt()">Lägg till restaurang</button>';
     else abtn.innerHTML='';
   }
+  var srmBtn=document.getElementById("settingsRestMgr");
+  if(srmBtn) srmBtn.style.display=isAdmin?"block":"none";
+  // Start notification polling
+  loadNotifications();
+  if(!notifInterval) notifInterval=setInterval(loadNotifications,15000);
 }
 
 // ========== PROFILE ==========
@@ -1236,7 +1300,15 @@ var RESULT_FIELDS=["sales","laborCost","hours","waste","tt","google","googleCoun
 
 function dayCompleteness(ym,rest,d){
   var filled=0;
-  RESULT_FIELDS.forEach(function(k){var v=getVal(ym,rest,d,k);if(v&&v!==0&&v!=="")filled++;});
+  RESULT_FIELDS.forEach(function(k){
+    try{
+      var dayObj=state.months[ym][rest][d];
+      if(dayObj&&dayObj.hasOwnProperty(k)){
+        var v=dayObj[k];
+        if(v!==null&&v!==undefined&&v!=="")filled++;
+      }
+    }catch(e){}
+  });
   if(filled===0)return"empty";
   if(filled>=RESULT_FIELDS.length)return"complete";
   return"partial";
