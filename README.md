@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mister York — District Dashboard (Manuell)</title>
+<title>Mister York — Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -57,15 +57,64 @@ td input[type="text"]:focus{border-color:var(--accent);}
 td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 .section-label{font-size:11px;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:14px 0 6px;display:flex;align-items:center;gap:8px;}
 .section-label::after{content:"";flex:1;height:1px;background:var(--border);}
+/* Settings menu */
+.settings-wrap{position:relative;display:inline-block;}
+.settings-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.settings-btn:hover{border-color:var(--dim);color:var(--text);transform:rotate(30deg);}
+.settings-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--card);border:1px solid var(--border);border-radius:10px;min-width:190px;z-index:300;box-shadow:0 8px 30px rgba(0,0,0,0.5);padding:4px 0;}
+.settings-menu.open{display:block;}
+.settings-name{padding:12px 16px 8px;font-size:14px;font-weight:800;color:var(--text);border-bottom:1px solid var(--border);margin-bottom:2px;}
+.settings-item{display:block;width:100%;text-align:left;padding:10px 16px;background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.1s;}
+.settings-item:hover{background:var(--cardHover);color:var(--text);}
+.settings-item.danger{color:var(--red);}
+.settings-item.danger:hover{background:rgba(239,68,68,0.06);}
+/* Profile panel */
+.profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.profile-overlay.open{opacity:1;pointer-events:auto;}
+.profile-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 28px;width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:translateY(20px) scale(0.97);transition:transform 0.25s;}
+.profile-overlay.open .profile-box{transform:translateY(0) scale(1);}
+.profile-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:20px;}
+.profile-field{margin-bottom:16px;}
+.profile-field .pf-label{font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.profile-field .pf-value{font-size:15px;font-weight:600;color:var(--text);padding:8px 0;}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+/* Theme toggle - pill slider */
+.theme-toggle{width:56px;height:28px;border-radius:14px;border:1px solid var(--border);background:var(--bg);cursor:pointer;position:relative;transition:all 0.3s;padding:0;display:flex;align-items:center;}
+.theme-toggle:hover{border-color:var(--dim);}
+.theme-toggle .tt-knob{width:22px;height:22px;border-radius:50%;background:var(--text);position:absolute;top:2px;transition:left 0.3s,background 0.3s;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;}
+.theme-toggle .tt-knob.dark{left:2px;}
+.theme-toggle .tt-knob.light{left:30px;}
+.theme-toggle .tt-track{width:100%;display:flex;justify-content:space-between;padding:0 6px;font-size:11px;pointer-events:none;}
+.theme-toggle .tt-track span{opacity:0.4;}
+/* Slay button */
+.slay-btn{width:42px;height:42px;border-radius:50%;border:2px solid rgba(236,72,153,0.4);background:rgba(236,72,153,0.08);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;z-index:100;transition:all 0.2s;margin:20px 0 10px auto;}
+.slay-btn:hover{transform:scale(1.1);border-color:rgba(236,72,153,0.7);background:rgba(236,72,153,0.15);}
+/* Latest report button */
+.btn-latest{padding:8px 14px;border-radius:10px;border:1px solid var(--teal);background:transparent;color:var(--teal);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
+.btn-latest:hover{background:rgba(20,184,166,0.1);}
+.btn-latest.active{background:var(--teal);color:#fff;}
+/* Light theme */
+[data-theme="light"]{--bg:#e8eaef;--card:#ffffff;--cardHover:#f3f4f6;--border:#c5cad2;--text:#0f1117;--muted:#3d4655;--dim:#7a8494;--accent:#C41E3A;--accentD:#8B1528;--accentL:#E8354F;--green:#15803d;--red:#b91c1c;--amber:#b45309;--purple:#7e22ce;--blue:#1d4ed8;--teal:#0f766e;}
+[data-theme="light"] .login-card{box-shadow:0 20px 60px rgba(0,0,0,0.1);}
+[data-theme="light"] .mp-popup{box-shadow:0 12px 40px rgba(0,0,0,0.15);}
+[data-theme="light"] .settings-menu{box-shadow:0 8px 30px rgba(0,0,0,0.12);}
+[data-theme="light"] .modal-box{box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+[data-theme="light"] td input[type="number"],[data-theme="light"] td input[type="text"],[data-theme="light"] .form-group input{background:#f8f9fa;border-color:#dfe2e6;color:#1a1a2e;}
+/* Slay theme */
+[data-theme="slay"]{--bg:#fdf0f4;--card:#ffffff;--cardHover:#fce8ef;--border:#e8a0bb;--text:#2d0a1a;--muted:#6b2040;--dim:#b06080;--accent:#db2777;--accentD:#9d174d;--accentL:#ec4899;--green:#16a34a;--red:#e11d48;--amber:#d97706;--purple:#9333ea;--blue:#2563eb;--teal:#db2777;}
+[data-theme="slay"] .login-card{box-shadow:0 20px 60px rgba(236,72,153,0.12);}
+[data-theme="slay"] .mp-cell.selected{background:var(--accent);}
+[data-theme="slay"] .rest-pill.active{background:var(--accent);border-color:var(--accent);}
+[data-theme="slay"] .btn-latest{border-color:var(--accent);color:var(--accent);}
+[data-theme="slay"] .btn-latest:hover{background:rgba(236,72,153,0.1);}
+[data-theme="slay"] .btn-latest.active{background:var(--accent);color:#fff;}
+[data-theme="slay"] .slay-btn{border-color:rgba(236,72,153,0.6);background:rgba(236,72,153,0.12);}
+[data-theme="slay"] .mp-popup{box-shadow:0 12px 40px rgba(236,72,153,0.15);}
+[data-theme="slay"] .settings-menu{box-shadow:0 8px 30px rgba(236,72,153,0.12);}
+[data-theme="slay"] .modal-box{box-shadow:0 20px 60px rgba(236,72,153,0.15);}
+[data-theme="slay"] td input[type="number"],[data-theme="slay"] td input[type="text"],[data-theme="slay"] .form-group input{background:#fef0f5;border-color:#f9d4e0;color:#4a1030;}
+[data-theme="slay"] .tab.active{background:var(--accent);}
 /* Day cards - week grouped */
-.overview-filter{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.overview-filter .of-btn{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;}
-.overview-filter .of-btn:hover{border-color:var(--dim);color:var(--muted);}
-.overview-filter .of-btn.active{background:var(--teal);border-color:var(--teal);color:#fff;}
-.overview-filter .of-range{display:flex;align-items:center;gap:6px;}
-.overview-filter .of-range input{width:55px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px;font-size:13px;font-family:inherit;font-weight:600;outline:none;text-align:center;}
-.overview-filter .of-range input:focus{border-color:var(--accent);}
-.overview-filter .of-label{font-size:12px;color:var(--dim);font-weight:500;}
 .week-group{margin-bottom:20px;}
 .week-label{font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-left:2px;}
 .week-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
@@ -190,8 +239,9 @@ td.weekend{background:rgba(196,30,58,0.04);}
 <!-- LOGIN -->
 <div id="loginScreen" style="display:none">
   <div class="login-card">
+    <img class="logo-img" id="loginLogo" style="width:52px;height:52px;margin-bottom:12px" alt="MY">
     <h1>Mister York</h1>
-    <p class="login-sub">District Dashboard</p>
+    <p class="login-sub">Dashboard</p>
     <label for="loginEmail">E-post</label>
     <input type="email" id="loginEmail" placeholder="din@email.com">
     <div id="nameRow" style="display:none">
@@ -221,6 +271,25 @@ td.weekend{background:rgba(196,30,58,0.04);}
     </div>
   </div>
 </div>
+<!-- PROFILE -->
+<div class="profile-overlay" id="profileOverlay" onclick="if(event.target===this)closeProfile()">
+  <div class="profile-box">
+    <div class="profile-title">Min profil</div>
+    <div class="profile-field">
+      <div class="pf-label">Namn</div>
+      <div class="pf-value" id="profileName">—</div>
+    </div>
+    <div class="profile-field">
+      <div class="pf-label">E-post</div>
+      <div class="pf-value" id="profileEmail">—</div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn btn-outline" onclick="editNameFromProfile()">&#9998; &Auml;ndra namn</button>
+      <button class="btn btn-outline" onclick="changePassword()">&#128274; Byt l&ouml;senord</button>
+      <button class="btn btn-outline" style="margin-left:auto" onclick="closeProfile()">St&auml;ng</button>
+    </div>
+  </div>
+</div>
 <!-- DASHBOARD -->
 <div id="dashWrap">
 <div class="header">
@@ -244,20 +313,32 @@ td.weekend{background:rgba(196,30,58,0.04);}
         <div class="mp-grid" id="mpGrid"></div>
       </div>
     </div>
-    <button class="btn btn-outline" onclick="addRestaurantPrompt()">+ Restaurang</button>
-    <div id="userBadge" style="display:flex;align-items:center;gap:8px;margin-left:8px"></div>
+    <button class="btn btn-outline" onclick="addRestaurantPrompt()">Lägg till restaurang</button>
+    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Byt tema"><div class="tt-track"><span>☾</span><span>☀</span></div><div class="tt-knob dark" id="ttKnob">☾</div></div>
+    <div class="settings-wrap">
+      <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">&#9881;</button>
+      <div class="settings-menu" id="settingsMenu">
+        <div class="settings-name" id="settingsName">...</div>
+        <button class="settings-item" onclick="openProfile();closeSettings()">Redigera profil</button>
+        <button class="settings-item danger" onclick="doLogout();closeSettings()">Logga ut</button>
+      </div>
+    </div>
   </div>
 </div>
 <div class="main">
-  <div class="tabs" id="tabs">
-    <button class="tab active" onclick="switchPage('overview')">&#214;versikt</button>
-    <span class="tab-div"></span>
-    <button class="tab secondary" onclick="switchPage('forecast')">Prognos</button>
-    <button class="tab secondary" onclick="switchPage('results')">Resultat</button>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap">
+    <div class="tabs" id="tabs" style="margin-bottom:0">
+      <button class="tab active" onclick="switchPage('overview')">&#214;versikt</button>
+      <span class="tab-div"></span>
+      <button class="tab secondary" onclick="switchPage('forecast')">Prognos</button>
+      <button class="tab secondary" onclick="switchPage('results')">Resultat</button>
+    </div>
+    <button class="btn-latest" id="latestBtn" onclick="toggleLatestReport()">Senaste dagsrapporten</button>
   </div>
   <div id="kpis" class="kpis"></div>
   <div id="content"></div>
-  <div class="footer" id="footer">Mister York &middot; District Dashboard</div>
+  <div class="footer" id="footer">Mister York Dashboard skapad av Marcus Broman</div>
+  <button class="slay-btn" id="slayBtn" onclick="toggleSlay()" title="Slay mode">🔥</button>
 </div>
 </div>
 <input type="file" id="csvImport" class="file-hidden" accept=".csv" onchange="handleImport(event)">
@@ -376,24 +457,125 @@ function showDashboard(){
   document.getElementById("loadingScreen").style.display="none";
   document.getElementById("loginScreen").style.display="none";
   document.getElementById("dashWrap").style.display="block";
-  // Load display name from Firestore
-  if(currentUser){
-    db.collection("users").doc(currentUser.uid).get().then(function(doc){
-      var name=(doc.exists&&doc.data().displayName)?doc.data().displayName:currentUser.email;
-      document.getElementById("userBadge").innerHTML='<span style="font-weight:700;color:var(--text)" id="userName">'+name+'</span><button onclick="editName()" class="btn btn-outline" style="padding:3px 7px;font-size:10px" title="\u00c4ndra namn">\u270e</button><button onclick="doLogout()" class="btn btn-outline" style="padding:4px 10px;font-size:11px">Logga ut</button>';
-    });
-  }
+  updateThemeToggle();
+  updateLatestBtn();
+  loadUserName();
 }
 
-function editName(){
-  var current=document.getElementById("userName").textContent;
-  openModal("\u00c4ndra namn","Ange ditt nya namn.","Ditt namn",current,"Spara",true).then(function(newName){
-    if(!newName||!newName.trim()||newName.trim()===current)return;
+// ========== PROFILE ==========
+var cachedDisplayName="";
+
+function loadUserName(){
+  if(!currentUser)return Promise.resolve();
+  return db.collection("users").doc(currentUser.uid).get().then(function(doc){
+    cachedDisplayName=(doc.exists&&doc.data().displayName)?doc.data().displayName:"";
+    var el=document.getElementById("settingsName");
+    if(el)el.textContent=cachedDisplayName||currentUser.email;
+  });
+}
+
+function openProfile(){
+  document.getElementById("profileName").textContent=cachedDisplayName||"Ej angivet";
+  document.getElementById("profileEmail").textContent=currentUser?currentUser.email:"";
+  document.getElementById("profileOverlay").classList.add("open");
+}
+function closeProfile(){
+  document.getElementById("profileOverlay").classList.remove("open");
+}
+
+function editNameFromProfile(){
+  openModal("\u00c4ndra namn","Ange ditt nya namn.","Ditt namn",cachedDisplayName,"Spara",true).then(function(newName){
+    if(!newName||!newName.trim())return;
     newName=newName.trim();
     db.collection("users").doc(currentUser.uid).set({displayName:newName},{merge:true}).then(function(){
-      document.getElementById("userName").textContent=newName;
+      cachedDisplayName=newName;
+      document.getElementById("profileName").textContent=newName;
+      var el=document.getElementById("settingsName");
+      if(el)el.textContent=newName;
     });
   });
+}
+
+function changePassword(){
+  openModal("Byt l\u00f6senord","Ange ditt nya l\u00f6senord (minst 6 tecken).","Nytt l\u00f6senord","","Spara",true).then(function(newPass){
+    if(!newPass||newPass.length<6){
+      if(newPass!==null)openModal("F\u00f6r kort","L\u00f6senordet m\u00e5ste vara minst 6 tecken.","","","OK",false);
+      return;
+    }
+    currentUser.updatePassword(newPass).then(function(){
+      openModal("Klart","Ditt l\u00f6senord har \u00e4ndrats.","","","OK",false);
+      // Update remember-me if active
+      try{
+        var saved=localStorage.getItem("myRemember");
+        if(saved){
+          var d=JSON.parse(saved);
+          d.p=newPass;
+          localStorage.setItem("myRemember",JSON.stringify(d));
+        }
+      }catch(e){}
+    }).catch(function(e){
+      var msg="N\u00e5got gick fel";
+      if(e.code==="auth/requires-recent-login")msg="Du beh\u00f6ver logga in igen f\u00f6rst f\u00f6r att byta l\u00f6senord.";
+      openModal("Fel",msg,"","","OK",false);
+    });
+  });
+}
+
+// ========== SETTINGS MENU ==========
+function toggleSettings(){
+  var m=document.getElementById("settingsMenu");
+  m.classList.toggle("open");
+}
+function closeSettings(){
+  document.getElementById("settingsMenu").classList.remove("open");
+}
+document.addEventListener("click",function(e){
+  var w=document.querySelector(".settings-wrap");
+  if(w&&!w.contains(e.target))closeSettings();
+});
+
+// ========== THEME ==========
+var currentTheme="dark";
+function setTheme(t){
+  currentTheme=t;
+  document.documentElement.setAttribute("data-theme",t);
+  try{localStorage.setItem("myTheme",t);}catch(e){}
+  updateThemeToggle();
+}
+function toggleTheme(){
+  setTheme(currentTheme==="dark"?"light":"dark");
+}
+function toggleSlay(){
+  setTheme(currentTheme==="slay"?"dark":"slay");
+}
+function updateThemeToggle(){
+  var knob=document.getElementById("ttKnob");
+  if(!knob)return;
+  var isLight=(currentTheme==="light"||currentTheme==="slay");
+  knob.className="tt-knob "+(isLight?"light":"dark");
+  knob.textContent=isLight?"\u2600":"\u263e";
+}
+function loadTheme(){
+  try{var t=localStorage.getItem("myTheme");if(t)setTheme(t);}catch(e){}
+  updateThemeToggle();
+}
+
+// ========== LATEST REPORT BUTTON ==========
+function toggleLatestReport(){
+  if(overviewUpTo>0){overviewUpTo=0;}
+  else{
+    var sel=selectedRests.length?selectedRests:state.restaurants;
+    var last=getLastFilledDay(currentMonth,sel);
+    overviewUpTo=last||0;
+  }
+  updateLatestBtn();
+  if(currentPage==="overview")render();
+  else{currentPage="overview";selectedDay=0;render();}
+}
+function updateLatestBtn(){
+  var btn=document.getElementById("latestBtn");
+  if(!btn)return;
+  btn.classList.toggle("active",overviewUpTo>0);
 }
 
 function showLogin(){
@@ -444,6 +626,9 @@ auth.onAuthStateChanged(function(user){
 });
 
 // Enter key handlers
+// Copy logo src to login
+try{var logoEl=document.querySelector(".header .logo-img");var loginLogoEl=document.getElementById("loginLogo");if(logoEl&&loginLogoEl)loginLogoEl.src=logoEl.src;}catch(e){}
+
 document.getElementById("loginEmail").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("loginPass").focus();});
 document.getElementById("loginPass").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
 
@@ -769,6 +954,7 @@ function render(){
   thtml+='<button class="tab secondary'+(currentPage==="forecast"?" active":"")+'" onclick="switchPage(\'forecast\')">Prognos</button>';
   thtml+='<button class="tab secondary'+(currentPage==="results"?" active":"")+'" onclick="switchPage(\'results\')">Resultat</button>';
   tabs.innerHTML=thtml;
+  updateLatestBtn();
 
   if(!currentMonth){document.getElementById("kpis").innerHTML="";document.getElementById("content").innerHTML='<div style="text-align:center;padding:80px 0;color:var(--dim);font-size:15px;font-weight:600">V\u00e4lj en m\u00e5nad f\u00f6r att b\u00f6rja</div>';return;}
   if(!state.restaurants.length){document.getElementById("kpis").innerHTML="";document.getElementById("content").innerHTML='<div style="text-align:center;padding:80px 0;color:var(--dim);font-size:15px;font-weight:600">L\u00e4gg till en restaurang med knappen ovan</div>';return;}
@@ -996,23 +1182,13 @@ function getLastFilledDay(ym,rests){
   }
   return 0;
 }
-function setOverviewLatest(){
-  var sel=selectedRests.length?selectedRests:state.restaurants;
-  var last=getLastFilledDay(currentMonth,sel);
-  overviewUpTo=last||0;
-  render();
-}
-function setOverviewAll(){overviewUpTo=0;render();}
-function setOverviewCustom(val){
-  var v=parseInt(val);
-  if(v>0&&v<=daysInMonth(currentMonth))overviewUpTo=v;
-  else overviewUpTo=0;
-  render();
-}
 
 function renderOverview(nd){
   var sel=selectedRests.length?selectedRests:state.restaurants;
-  var maxDay=overviewUpTo>0?Math.min(overviewUpTo,nd):nd;
+  var singleDay=overviewUpTo>0?Math.min(overviewUpTo,nd):0;
+  var startDay=singleDay>0?singleDay:1;
+  var maxDay=singleDay>0?singleDay:nd;
+  var lastFilledDay=getLastFilledDay(currentMonth,sel);
 
   // Aggregate only selected restaurants up to maxDay
   var tS=0,tL=0,tW=0,tH=0,tAb=0,ttS=0,ttC=0,tFcS=0,tFcL=0,tGoog=0,tGoogC=0;
@@ -1021,7 +1197,7 @@ function renderOverview(nd){
   var restTotals={};
   sel.forEach(function(r){restTotals[r]={sales:0,labor:0,waste:0,hours:0,absence:0,tt:0,ttc:0,fcSales:0,fcLabor:0,dailySales:[]};});
 
-  for(var d=1;d<=maxDay;d++){
+  for(var d=startDay;d<=maxDay;d++){
     labels.push(shortDate(currentMonth,d));
     var ds=0,dl=0,dh=0,dw=0,da=0,dtt=0,dtc=0,dfs=0,dfl=0;
     sel.forEach(function(r){
@@ -1053,29 +1229,16 @@ function renderOverview(nd){
   var lp=tS?tL/tS*100:0,wp=tS?tW/tS*100:0,avgTT=ttC?ttS/ttC:0;
   var abRate=(tH+tAb)?(tAb/(tH+tAb)*100):0;
   var avgGoog=tGoogC?(tGoog/tGoogC):0;
-  var dayLabel=overviewUpTo>0?"Dag 1\u2013"+maxDay:"Hela m\u00e5naden ("+nd+" dagar)";
-
-  // Filter UI
-  var filterHtml='<div class="overview-filter">';
-  filterHtml+='<button class="of-btn'+(overviewUpTo===0?" active":"")+'" onclick="setOverviewAll()">Hela m\u00e5naden</button>';
-  var lastDay=getLastFilledDay(currentMonth,sel);
-  if(lastDay>0){
-    filterHtml+='<button class="of-btn'+(overviewUpTo===lastDay?" active":"")+'" onclick="setOverviewLatest()">T.o.m. dag '+lastDay+' (senast ifylld)</button>';
-  }
-  if(overviewUpTo>0&&overviewUpTo!==lastDay){
-    filterHtml+='<button class="of-btn active">Dag 1\u2013'+overviewUpTo+'</button>';
-  }
-  filterHtml+='<div class="of-range"><span class="of-label">Anpassad:</span><input type="number" min="1" max="'+nd+'" value="'+(overviewUpTo||"")+'" placeholder="'+nd+'" onchange="setOverviewCustom(this.value)"></div>';
-  filterHtml+='</div>';
+  var dayLabel=singleDay>0?maxDay+" "+dayName(currentMonth,maxDay):"Hela m\u00e5naden ("+nd+" dagar)";
 
   // KPIs
   function kpi(title,main,unit,sub,color){
     var bc=color==="red"?"var(--red)":color==="green"?"var(--green)":"rgba(255,255,255,0.2)";
     return'<div class="kpi" style="border-color:'+bc+'"><div class="kpi-top"><span class="kpi-title">'+title+'</span></div><div class="kpi-row"><span class="kpi-main">'+main+'<span class="kpi-unit">'+unit+'</span></span></div><div class="kpi-sub">'+sub+'</div></div>';
   }
-  document.getElementById("kpis").innerHTML=filterHtml
-    +kpi("F\u00f6rs\u00e4ljning",fmt(tS),"kr",dayLabel+" | "+fmt(maxDay?Math.round(tS/maxDay):0)+" kr/dag","")
-    +kpi("Labor",fmtPct(lp),"",fmt(tL)+" kr | "+fmt(tH)+" tim | "+fmt(tH?Math.round(tS/tH):0)+" kr/tim",lp>25?"red":"green")
+  document.getElementById("kpis").innerHTML=
+    kpi("F\u00f6rs\u00e4ljning",fmt(tS),"kr",dayLabel+" | "+fmt(maxDay?Math.round(tS/maxDay):0)+" kr/dag","")
+    +kpi("Personalkostnad",fmtPct(lp),"",fmt(tL)+" kr | "+fmt(tH)+" tim | "+fmt(tH?Math.round(tS/tH):0)+" kr/tim",lp>25?"red":"green")
     +kpi("Google Omd\u00f6me",avgGoog?avgGoog.toFixed(1):"—","",tGoogC+" omd\u00f6men registrerade",avgGoog>=4.5?"green":avgGoog>=4.0?"":"red")
     +kpi("Ticket Time",fmtMM(avgTT),"",fmt(Math.round(avgTT))+" sek snitt",avgTT>360?"red":"green")
     +kpi("Sjukfr\u00e5nvaro",fmtPct(abRate),"",fmt(Math.round(tAb))+" tim totalt",abRate>2?"red":"green");
@@ -1087,7 +1250,6 @@ function renderOverview(nd){
   var pickerHtml='';
   if(state.restaurants.length>1){
     pickerHtml='<div class="ms-wrap">';
-    pickerHtml+='<button class="ms-all" onclick="toggleAllRests()">'+(selectedRests.length===state.restaurants.length?"Avmarkera alla":"V\u00e4lj alla")+'</button>';
     state.restaurants.forEach(function(r,i){
       var chk=sel.indexOf(r)>=0;
       pickerHtml+='<button class="ms-chip'+(chk?" checked":"")+'" onclick="toggleRestOverview(\''+r.replace(/'/g,"\\'")+"')\">"+'<span class="dot" style="background:'+CC[i%CC.length]+'"></span>'+r+'</button>';
@@ -1103,7 +1265,7 @@ function renderOverview(nd){
   }).join("");
 
   // Forecast plan
-  var fcPlan=[];for(var d2=1;d2<=maxDay;d2++){var dfs2=0;sel.forEach(function(r){dfs2+=getVal(currentMonth,r,d2,"fcSales");});fcPlan.push(dfs2);}
+  var fcPlan=[];for(var d2=startDay;d2<=maxDay;d2++){var dfs2=0;sel.forEach(function(r){dfs2+=getVal(currentMonth,r,d2,"fcSales");});fcPlan.push(dfs2);}
   var fcDiff=dailySales.map(function(v,i){return v-fcPlan[i];});
 
   el.innerHTML=pickerHtml+'<div class="grid grid-2">'+
@@ -1131,6 +1293,7 @@ function renderOverview(nd){
 
 // ========== INIT ==========
 Chart.defaults.font.family="'Plus Jakarta Sans','Segoe UI',sans-serif";
+loadTheme();
 </script>
 </body>
 </html>
