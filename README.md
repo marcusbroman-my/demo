@@ -471,7 +471,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       </div>
       <div id="latestToggleWrap"></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-outline" onclick="addRestaurantPrompt()">Lägg till restaurang</button>
+        <span id="adminRestBtn"></span>
       </div>
     </div>
     <div class="main">
@@ -483,7 +483,6 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
   </div>
 </div>
 </div>
-<input type="file" id="csvImport" class="file-hidden" accept=".csv" onchange="handleImport(event)">
 <script>
 // ========== FIREBASE ==========
 firebase.initializeApp({
@@ -500,34 +499,79 @@ var currentUser = null;
 var isSignUp = false;
 
 // ========== STATE ==========
+var ADMIN_EMAIL="marcus.broman@misteryork.se";
+var isAdmin=false;
 var state={restaurants:[],months:{}};
 var currentPage="overview";
 var currentMonth="";
 var charts=[];
 var selectedRest="";
 var selectedRests=[];
-var selectedDay=0; // 0 = grid view, 1-31 = day detail
-var overviewUpTo=0; // 0 = all days, >0 = up to that day
+var selectedDay=0;
+var overviewUpTo=0;
 var saving=false;
 
 function saveState(){
   if(!currentUser||saving)return;
   saving=true;
-  db.collection("users").doc(currentUser.uid).set({data:JSON.stringify(state)},{merge:true})
+  // Save shared restaurant data to each restaurant doc
+  var batch=db.batch();
+  state.restaurants.forEach(function(r){
+    var rDoc=db.collection("restaurantData").doc(r);
+    var rMonths={};
+    Object.keys(state.months).forEach(function(ym){
+      if(state.months[ym][r]) rMonths[ym]=state.months[ym][r];
+    });
+    batch.set(rDoc,{months:JSON.stringify(rMonths)},{merge:true});
+  });
+  batch.commit()
     .then(function(){saving=false;})
     .catch(function(e){console.error("Save error:",e);saving=false;});
 }
+
 function loadState(){
   return new Promise(function(resolve){
     if(!currentUser){resolve(false);return;}
-    db.collection("users").doc(currentUser.uid).get()
-      .then(function(doc){
-        if(doc.exists&&doc.data().data){
-          state=JSON.parse(doc.data().data);
-          resolve(true);
-        }else{resolve(false);}
-      })
-      .catch(function(e){console.error("Load error:",e);resolve(false);});
+    isAdmin=(currentUser.email===ADMIN_EMAIL);
+    // Load restaurant assignments for this user
+    loadMyRestaurants().then(function(myRests){
+      state.restaurants=myRests;
+      state.months={};
+      if(myRests.length===0){resolve(true);return;}
+      // Load data for each assigned restaurant
+      var promises=myRests.map(function(r){
+        return db.collection("restaurantData").doc(r).get().then(function(doc){
+          if(doc.exists&&doc.data().months){
+            var rMonths=JSON.parse(doc.data().months);
+            Object.keys(rMonths).forEach(function(ym){
+              if(!state.months[ym])state.months[ym]={};
+              state.months[ym][r]=rMonths[ym];
+            });
+          }
+        });
+      });
+      Promise.all(promises).then(function(){resolve(true);}).catch(function(e){console.error("Load error:",e);resolve(false);});
+    });
+  });
+}
+
+function loadMyRestaurants(){
+  return new Promise(function(resolve){
+    if(isAdmin){
+      // Admin sees all restaurants from the global registry
+      db.collection("restaurantRegistry").get().then(function(snap){
+        var rests=[];
+        snap.forEach(function(doc){rests.push(doc.id);});
+        resolve(rests.sort());
+      }).catch(function(){resolve([]);});
+    }else{
+      // Normal user: find restaurants where their email is a member
+      db.collection("restaurantRegistry").where("members","array-contains",currentUser.email).get().then(function(snap){
+        var rests=[];
+        snap.forEach(function(doc){rests.push(doc.id);});
+        resolve(rests.sort());
+      }).catch(function(){resolve([]);});
+    }
   });
 }
 
@@ -601,6 +645,12 @@ function showDashboard(){
   document.getElementById("dashWrap").style.display="block";
   updateThemeToggle();
   loadUserName();
+  // Admin-only buttons
+  var abtn=document.getElementById("adminRestBtn");
+  if(abtn){
+    if(isAdmin) abtn.innerHTML='<button class="btn btn-outline" onclick="addRestaurantPrompt()">Lägg till restaurang</button>';
+    else abtn.innerHTML='';
+  }
 }
 
 // ========== PROFILE ==========
@@ -884,25 +934,62 @@ function closeModal(){
 function modalOutsideClick(e){if(e.target===document.getElementById("modalOverlay"))closeModal();}
 
 function addRestaurantPrompt(){
+  if(!isAdmin)return;
   openModal("Ny restaurang","Ange namn p\u00e5 den nya restaurangen.","Restaurangnamn","","L\u00e4gg till",true).then(function(n){
     if(!n||!n.trim())return;n=n.trim();
     if(state.restaurants.indexOf(n)>=0){openModal("Finns redan","En restaurang med det namnet finns redan.","","","OK",false);return;}
-    state.restaurants.push(n);
-    if(!selectedRest)selectedRest=n;
-    if(selectedRests.indexOf(n)<0)selectedRests.push(n);
-    if(currentMonth)ensureMonth(currentMonth);
-    saveState();render();
+    // Register globally
+    db.collection("restaurantRegistry").doc(n).set({members:[],createdBy:currentUser.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()}).then(function(){
+      state.restaurants.push(n);
+      if(!selectedRest)selectedRest=n;
+      if(selectedRests.indexOf(n)<0)selectedRests.push(n);
+      if(currentMonth)ensureMonth(currentMonth);
+      render();
+    });
   });
 }
 function removeRestaurant(name){
+  if(!isAdmin)return;
   openModal("Ta bort restaurang","Vill du ta bort "+name+"? All data f\u00f6r denna restaurang raderas permanent.","","","Ta bort",false,true).then(function(ok){
     if(!ok)return;
-    state.restaurants=state.restaurants.filter(function(r){return r!==name;});
-    selectedRests=selectedRests.filter(function(r){return r!==name;});
-    if(selectedRest===name)selectedRest=state.restaurants[0]||"";
-    Object.keys(state.months).forEach(function(ym){delete state.months[ym][name];});
-    saveState();render();
+    db.collection("restaurantRegistry").doc(name).delete().then(function(){
+      db.collection("restaurantData").doc(name).delete().catch(function(){});
+      state.restaurants=state.restaurants.filter(function(r){return r!==name;});
+      selectedRests=selectedRests.filter(function(r){return r!==name;});
+      if(selectedRest===name)selectedRest=state.restaurants[0]||"";
+      Object.keys(state.months).forEach(function(ym){delete state.months[ym][name];});
+      render();
+    });
   });
+}
+
+// ========== ADMIN: MANAGE MEMBERS ==========
+function openManageMembers(restName){
+  if(!isAdmin)return;
+  db.collection("restaurantRegistry").doc(restName).get().then(function(doc){
+    var members=(doc.exists&&doc.data().members)||[];
+    var html='<div style="margin-bottom:12px;font-size:13px;color:var(--muted)">Medlemmar i <b>'+restName+'</b>:</div>';
+    if(members.length===0) html+='<div style="color:var(--dim);font-size:12px;margin-bottom:10px">Inga medlemmar \u00e4nnu.</div>';
+    else{
+      members.forEach(function(em){
+        html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;background:var(--bg);padding:6px 10px;border-radius:8px;font-size:12px"><span style="flex:1">'+em+'</span><button class="btn btn-danger" style="font-size:10px;padding:3px 8px" onclick="removeMember(\''+restName.replace(/'/g,"\\'")+'\'  ,\''+em.replace(/'/g,"\\'")+'\')">&times;</button></div>';
+      });
+    }
+    html+='<div style="display:flex;gap:6px;margin-top:12px"><input id="newMemberEmail" class="modal-input" placeholder="Ange email..." style="flex:1"><button class="btn btn-primary" style="font-size:11px" onclick="addMember(\''+restName.replace(/'/g,"\\'")+'\')"  >L\u00e4gg till</button></div>';
+    document.getElementById("content").innerHTML=html;
+  });
+}
+function addMember(restName){
+  var email=document.getElementById("newMemberEmail").value.trim().toLowerCase();
+  if(!email||email.indexOf("@")<0){openModal("Ogiltig email","Ange en giltig emailadress.","","","OK",false);return;}
+  db.collection("restaurantRegistry").doc(restName).update({
+    members:firebase.firestore.FieldValue.arrayUnion(email)
+  }).then(function(){openManageMembers(restName);});
+}
+function removeMember(restName,email){
+  db.collection("restaurantRegistry").doc(restName).update({
+    members:firebase.firestore.FieldValue.arrayRemove(email)
+  }).then(function(){openManageMembers(restName);});
 }
 
 function pickRest(name){selectedRest=name;render();}
@@ -979,7 +1066,9 @@ function toggleSidebar(){
   }
 })();
 
-function switchPage(p){selectedDay=0;currentPage=p;render();}
+function switchPage(p){
+  selectedDay=0;currentPage=p;render();
+}
 
 function destroyCharts(){charts.forEach(function(c){c.destroy();});charts=[];}
 function makeChart(id,cfg){
@@ -993,147 +1082,10 @@ var CC=["#C41E3A","#22C55E","#3B82F6","#F59E0B","#A855F7","#EC4899","#14B8A6"];
 
 
 // ========== EXPORT / IMPORT ==========
-function exportCSV(type){
-  var rest=selectedRest;
-  if(!rest||!currentMonth)return;
-  ensureMonth(currentMonth);
-  var nd=daysInMonth(currentMonth);
-  var rows=[];
-  if(type==="forecast"){
-    rows.push(["Restaurang","Månad","Dag","FC Försäljning","FC Labor Cost"]);
-    for(var d=1;d<=nd;d++){
-      rows.push([rest,currentMonth,d,getVal(currentMonth,rest,d,"fcSales"),getVal(currentMonth,rest,d,"fcLabor")]);
-    }
-  }else{
-    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Betyg","Google Antal","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
-    for(var d=1;d<=nd;d++){
-      rows.push([rest,currentMonth,d,
-        getVal(currentMonth,rest,d,"sales"),getVal(currentMonth,rest,d,"laborCost"),
-        getVal(currentMonth,rest,d,"hours"),getVal(currentMonth,rest,d,"waste"),
-        getVal(currentMonth,rest,d,"tt"),getVal(currentMonth,rest,d,"google"),getVal(currentMonth,rest,d,"googleCount"),
-        getVal(currentMonth,rest,d,"optiqo"),getVal(currentMonth,rest,d,"absence"),
-        getVal(currentMonth,rest,d,"slDay"),getVal(currentMonth,rest,d,"slEve")
-      ]);
-    }
-  }
-  var csv=rows.map(function(r){return r.map(function(c){
-    var s=String(c==null?"":c);
-    return s.indexOf(",")>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;
-  }).join(",");}).join("\n");
-  var blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;a.download=rest.replace(/\s+/g,"_")+"_"+type+"_"+currentMonth+".csv";
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-}
 
-function exportAllCSV(type){
-  var rest=selectedRest;
-  if(!rest)return;
-  var allMonths=Object.keys(state.months).filter(function(ym){return state.months[ym][rest];}).sort();
-  if(!allMonths.length){openModal("Ingen data","Det finns ingen data att exportera f\u00f6r "+rest+".","","","OK",false);return;}
-  var rows=[];
-  if(type==="forecast"){
-    rows.push(["Restaurang","Månad","Dag","FC Försäljning","FC Labor Cost"]);
-    allMonths.forEach(function(ym){
-      var nd=daysInMonth(ym);
-      for(var d=1;d<=nd;d++){
-        var fs=getVal(ym,rest,d,"fcSales"),fl=getVal(ym,rest,d,"fcLabor"),fga=getVal(ym,rest,d,"googleActual");
-        if(fs||fl)rows.push([rest,ym,d,fs,fl]);
-      }
-    });
-  }else{
-    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Betyg","Google Antal","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
-    allMonths.forEach(function(ym){
-      var nd=daysInMonth(ym);
-      for(var d=1;d<=nd;d++){
-        var s=getVal(ym,rest,d,"sales");
-        if(s)rows.push([rest,ym,d,s,getVal(ym,rest,d,"laborCost"),getVal(ym,rest,d,"hours"),getVal(ym,rest,d,"waste"),getVal(ym,rest,d,"tt"),getVal(ym,rest,d,"google"),getVal(ym,rest,d,"googleCount"),getVal(ym,rest,d,"optiqo"),getVal(ym,rest,d,"absence"),getVal(ym,rest,d,"slDay"),getVal(ym,rest,d,"slEve")]);
-      }
-    });
-  }
-  if(rows.length<=1){openModal("Ingen data","Det finns ingen data att exportera f\u00f6r "+rest+".","","","OK",false);return;}
-  var csv=rows.map(function(r){return r.map(function(c){
-    var s=String(c==null?"":c);
-    return s.indexOf(",")>=0||s.indexOf('"')>=0?'"'+s.replace(/"/g,'""')+'"':s;
-  }).join(",");}).join("\n");
-  var blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement("a");
-  a.href=url;a.download=rest.replace(/\s+/g,"_")+"_"+type+"_alla.csv";
-  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-}
 
-function triggerImport(type){
-  var inp=document.getElementById("csvImport");
-  inp.setAttribute("data-type",type);
-  inp.value="";
-  inp.click();
-}
 
-function handleImport(evt){
-  var file=evt.target.files[0];if(!file)return;
-  var type=evt.target.getAttribute("data-type")||"results";
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var lines=e.target.result.split("\n").map(function(l){return l.trim();}).filter(function(l){return l;});
-    if(lines.length<2){openModal("Fel","Filen verkar vara tom.","","","OK",false);return;}
-    var header=lines[0];
-    var isForecast=header.indexOf("FC")>=0;
-    var imported=0;
-    for(var i=1;i<lines.length;i++){
-      var cols=parseCSVLine(lines[i]);
-      if(cols.length<4)continue;
-      var rest=cols[0],ym=cols[1],d=parseInt(cols[2]);
-      if(!rest||!ym||!d)continue;
-      // Ensure restaurant exists
-      if(state.restaurants.indexOf(rest)<0)state.restaurants.push(rest);
-      if(!state.months[ym])state.months[ym]={};
-      if(!state.months[ym][rest])state.months[ym][rest]={};
-      if(!state.months[ym][rest][d])state.months[ym][rest][d]={};
-      if(isForecast){
-        state.months[ym][rest][d].fcSales=parseFloat(cols[3])||0;
-        state.months[ym][rest][d].fcLabor=parseFloat(cols[4])||0;
-      }else{
-        state.months[ym][rest][d].sales=parseFloat(cols[3])||0;
-        state.months[ym][rest][d].laborCost=parseFloat(cols[4])||0;
-        state.months[ym][rest][d].hours=parseFloat(cols[5])||0;
-        state.months[ym][rest][d].waste=parseFloat(cols[6])||0;
-        state.months[ym][rest][d].tt=parseFloat(cols[7])||0;
-        state.months[ym][rest][d].google=parseFloat(cols[8])||0;
-          state.months[ym][rest][d].googleCount=parseFloat(cols[9])||0;
-        state.months[ym][rest][d].optiqo=parseFloat(cols[9])||0;
-        state.months[ym][rest][d].absence=parseFloat(cols[10])||0;
-        if(cols[11])state.months[ym][rest][d].slDay=cols[11];
-        if(cols[12])state.months[ym][rest][d].slEve=cols[12];
-      }
-      imported++;
-    }
-    saveState();
-    selectedRest=state.restaurants[0]||"";
-    render();
-    openModal("Import klar",imported+" rader importerade fr\u00e5n "+file.name+".","","","OK",false);
-  };
-  reader.readAsText(file,"UTF-8");
-}
 
-function parseCSVLine(line){
-  var result=[],current="",inQuotes=false;
-  for(var i=0;i<line.length;i++){
-    var ch=line[i];
-    if(inQuotes){
-      if(ch==='"'&&line[i+1]==='"'){current+='"';i++;}
-      else if(ch==='"'){inQuotes=false;}
-      else{current+=ch;}
-    }else{
-      if(ch==='"'){inQuotes=true;}
-      else if(ch===","){result.push(current);current="";}
-      else{current+=ch;}
-    }
-  }
-  result.push(current);
-  return result;
-}
 
 // ========== RENDER ==========
 function render(){
@@ -1160,7 +1112,7 @@ function render(){
   }
 
   if(!currentMonth){document.getElementById("kpis").innerHTML="";document.getElementById("content").innerHTML='<div style="text-align:center;padding:80px 0;color:var(--dim);font-size:15px;font-weight:600">V\u00e4lj en m\u00e5nad f\u00f6r att b\u00f6rja</div>';return;}
-  if(!state.restaurants.length){document.getElementById("kpis").innerHTML="";document.getElementById("content").innerHTML='<div style="text-align:center;padding:80px 0;color:var(--dim);font-size:15px;font-weight:600">L\u00e4gg till en restaurang med knappen ovan</div>';return;}
+  if(!state.restaurants.length){document.getElementById("kpis").innerHTML="";document.getElementById("content").innerHTML='<div style="text-align:center;padding:80px 0;color:var(--dim);font-size:15px;font-weight:600">'+(isAdmin?'L\u00e4gg till en restaurang med knappen ovan':'Du har inte blivit tilldelad n\u00e5gon restaurang \u00e4nnu.<br><span style="font-weight:400;font-size:13px;margin-top:8px;display:block">Be din District Manager l\u00e4gga till dig.</span>')+'</div>';return;}
 
   // Ensure selections are valid
   if(!selectedRest||state.restaurants.indexOf(selectedRest)<0)selectedRest=state.restaurants[0];
@@ -1191,8 +1143,9 @@ function renderForecast(nd){
     });
     html+='</div>';
   }
+  if(isAdmin) html+='<button class="btn btn-outline" style="font-size:11px;margin-bottom:12px" onclick="openManageMembers(\''+rest.replace(/'/g,"\\'")+'\')">&#128101; Hantera medlemmar — '+rest+'</button>';
 
-  html+='<div class="actions"><button class="btn btn-primary" onclick="savePage()">Spara</button><span class="save-msg" id="saveMsg">\u2713 Sparat</span><div class="actions-right"><button class="btn btn-outline btn-icon" onclick="triggerImport(\'forecast\')">\u2191 Importera</button><button class="btn btn-outline btn-icon" onclick="exportCSV(\'forecast\')">\u2193 M\u00e5nad</button><button class="btn btn-outline btn-icon" onclick="exportAllCSV(\'forecast\')">\u2193 Alla</button><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div></div>';
+  html+='<div class="actions"><button class="btn btn-primary" onclick="savePage()">Spara</button><span class="save-msg" id="saveMsg">\u2713 Sparat</span>'+(isAdmin?'<div class="actions-right"><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div>':'')+'</div>';
 
   // Google actual rating - single value per restaurant per month
   var curGoogleActual=0;
@@ -1306,6 +1259,7 @@ function renderResults(nd){
     });
     html+='</div>';
   }
+  if(isAdmin) html+='<button class="btn btn-outline" style="font-size:11px;margin-bottom:12px" onclick="openManageMembers(\''+rest.replace(/'/g,"\\'")+'\')">&#128101; Hantera medlemmar — '+rest+'</button>';
 
   if(selectedDay>0&&selectedDay<=nd){
     // ===== DAY DETAIL VIEW =====
@@ -1345,7 +1299,7 @@ function renderResults(nd){
 
   }else{
     // ===== DAY CARD GRID (grouped by week) =====
-    html+='<div class="actions"><div class="actions-right" style="margin-left:0"><button class="btn btn-outline btn-icon" onclick="triggerImport(\'results\')">\u2191 Importera</button><button class="btn btn-outline btn-icon" onclick="exportCSV(\'results\')">\u2193 M\u00e5nad</button><button class="btn btn-outline btn-icon" onclick="exportAllCSV(\'results\')">\u2193 Alla</button></div></div>';
+    
     // Day header row
     html+='<div style="margin-bottom:16px"><div class="week-row" style="margin-bottom:4px">';
     ["M\u00e5n","Tis","Ons","Tor","Fre","L\u00f6r","S\u00f6n"].forEach(function(dn){
@@ -1823,7 +1777,7 @@ setInterval(function(){
 
 
 // ========== PAGE: PÅMINNELSER ==========
-var REMINDER_ADMIN="marcus.broman@misteryork.se";
+var REMINDER_ADMIN=ADMIN_EMAIL;
 var remGroups=[];  // [{id,name,members:[email,...],createdBy}]
 var remItems=[];   // [{id,groupId,body,from,fromName,ts}]
 var remOpenGroup=null;
