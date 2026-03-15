@@ -71,8 +71,9 @@ table{width:100%;border-collapse:collapse;font-size:13px;}
 th{padding:10px 12px;text-align:left;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);font-weight:700;}
 td{padding:6px 8px;font-weight:500;}
 tr+tr{border-top:1px solid rgba(30,42,54,0.3);}
-td input[type="number"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:inherit;font-weight:600;outline:none;-moz-appearance:textfield;}
-td input[type="number"]::-webkit-outer-spin-button,td input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+input[type="number"]{-moz-appearance:textfield;}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+td input[type="number"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:inherit;font-weight:600;outline:none;}
 td input[type="number"]:focus{border-color:var(--accent);}
 td input[type="text"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;font-family:inherit;font-weight:500;outline:none;}
 td input[type="text"]:focus{border-color:var(--accent);}
@@ -234,6 +235,47 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
 .msg-badge{position:absolute;top:4px;right:4px;min-width:16px;height:16px;border-radius:8px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;line-height:1;}
 .msg-nav-wrap{position:relative;}
 @media(max-width:700px){.chat-sidebar{width:100%;}.chat-main{display:none;}.chat-layout.conv-open .chat-sidebar{display:none;}.chat-layout.conv-open .chat-main{display:flex;}}
+
+/* Reminders */
+.rem-layout{display:flex;gap:0;height:calc(100vh - var(--topbar-h) - 1px);margin:-24px -28px;overflow:hidden;}
+.rem-sidebar{width:280px;border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;background:var(--card);overflow-y:auto;}
+.rem-sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.rem-sidebar-head h3{font-size:14px;font-weight:800;color:var(--text);margin:0;}
+.rem-groups{flex:1;overflow-y:auto;}
+.rem-group{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(30,42,54,0.2);transition:background 0.1s;}
+.rem-group:hover{background:var(--cardHover);}
+.rem-group.active{background:rgba(196,30,58,0.08);}
+.rem-group-icon{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rem-group-icon svg{color:#fff;}
+.rem-group-info{flex:1;min-width:0;}
+.rem-group-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rem-group-count{font-size:11px;color:var(--dim);}
+.rem-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);}
+.rem-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.rem-header-name{font-size:14px;font-weight:700;color:var(--text);}
+.rem-header-actions{display:flex;gap:8px;}
+.rem-feed{flex:1;overflow-y:auto;padding:20px;}
+.rem-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:12px;}
+.rem-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rem-card-from{font-size:12px;font-weight:700;color:var(--accent);}
+.rem-card-time{font-size:10px;color:var(--dim);}
+.rem-card-body{font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap;}
+.rem-compose{padding:16px 20px;border-top:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.rem-compose textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;resize:none;min-height:60px;line-height:1.5;box-sizing:border-box;transition:border 0.15s;}
+.rem-compose textarea:focus{border-color:var(--accent);}
+.rem-compose-row{display:flex;justify-content:flex-end;margin-top:8px;}
+.rem-empty{display:flex;align-items:center;justify-content:center;flex:1;color:var(--dim);font-size:14px;font-weight:500;text-align:center;padding:20px;}
+.rem-members{padding:16px 20px;border-bottom:1px solid var(--border);}
+.rem-members-title{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.rem-member-list{display:flex;flex-wrap:wrap;gap:6px;}
+.rem-member-chip{display:flex;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 4px;font-size:11px;color:var(--muted);font-weight:600;}
+.rem-member-chip .mini-av{width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;}
+.rem-member-chip .rem-x{cursor:pointer;margin-left:4px;opacity:0.5;font-size:13px;}
+.rem-member-chip .rem-x:hover{opacity:1;}
+.rem-add-member{display:flex;gap:6px;margin-top:8px;}
+.rem-add-member input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:12px;font-family:inherit;outline:none;box-sizing:border-box;}
+.rem-add-member input:focus{border-color:var(--accent);}
+@media(max-width:700px){.rem-sidebar{width:100%;}.rem-main{display:none;}.rem-layout.group-open .rem-sidebar{display:none;}.rem-layout.group-open .rem-main{display:flex;}}
 /* Logo */
 .logo-img{width:30px;height:30px;border-radius:50%;object-fit:cover;}
 /* Custom month picker */
@@ -394,6 +436,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       <button class="sidebar-item" onclick="switchPage('results')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span><span>Resultat</span></button>
       <button class="sidebar-item" onclick="switchPage('forecast')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Prognos</span></button>
       <div class="msg-nav-wrap"><button class="sidebar-item" onclick="switchPage('messages')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span>Chatt</span></button><span class="msg-badge" id="msgBadge" style="display:none">0</span></div>
+      <button class="sidebar-item" onclick="switchPage('reminders')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span><span>Påminnelser</span></button>
     </div>
     <div class="sidebar-bottom">
       <button class="collapse-toggle" onclick="toggleSidebar()" title="Fäll ihop sidofält"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="11 17 6 12 11 7"/><polyline points="18 17 13 12 18 7"/></svg></span><span>Fäll ihop</span></button>
@@ -744,7 +787,7 @@ function showLogin(){
 auth.onAuthStateChanged(function(user){
   if(user){
     currentUser=user;
-    loadState().then(function(){return loadMessages();}).then(function(){return loadProfilePic();}).then(function(){
+    loadState().then(function(){return loadMessages();}).then(function(){return loadReminders();}).then(function(){return loadProfilePic();}).then(function(){
       var now=new Date();
       currentMonth=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
       mpYear=now.getFullYear();
@@ -943,7 +986,7 @@ function makeChart(id,cfg){
   var el=document.getElementById(id);if(!el)return;
   cfg.options=cfg.options||{};cfg.options.responsive=true;cfg.options.maintainAspectRatio=false;
   cfg.options.plugins=cfg.options.plugins||{};cfg.options.plugins.legend=cfg.options.plugins.legend||{labels:{color:"#8899a6",font:{size:11,weight:600}}};
-  cfg.options.scales=cfg.options.scales||{x:{ticks:{color:"#556677",font:{size:10}},grid:{color:"rgba(30,42,54,0.5)"}},y:{ticks:{color:"#556677",font:{size:10}},grid:{color:"rgba(30,42,54,0.5)"}}};
+  cfg.options.scales=cfg.options.scales||{x:{ticks:{color:"#556677",font:{size:10},maxRotation:45,minRotation:0,autoSkip:false,maxTicksLimit:50},grid:{color:"rgba(30,42,54,0.5)"}},y:{ticks:{color:"#556677",font:{size:10}},grid:{color:"rgba(30,42,54,0.5)"}}};
   var c=new Chart(el,cfg);charts.push(c);return c;
 }
 var CC=["#C41E3A","#22C55E","#3B82F6","#F59E0B","#A855F7","#EC4899","#14B8A6"];
@@ -962,12 +1005,12 @@ function exportCSV(type){
       rows.push([rest,currentMonth,d,getVal(currentMonth,rest,d,"fcSales"),getVal(currentMonth,rest,d,"fcLabor")]);
     }
   }else{
-    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Omdöme","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
+    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Betyg","Google Antal","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
     for(var d=1;d<=nd;d++){
       rows.push([rest,currentMonth,d,
         getVal(currentMonth,rest,d,"sales"),getVal(currentMonth,rest,d,"laborCost"),
         getVal(currentMonth,rest,d,"hours"),getVal(currentMonth,rest,d,"waste"),
-        getVal(currentMonth,rest,d,"tt"),getVal(currentMonth,rest,d,"google"),
+        getVal(currentMonth,rest,d,"tt"),getVal(currentMonth,rest,d,"google"),getVal(currentMonth,rest,d,"googleCount"),
         getVal(currentMonth,rest,d,"optiqo"),getVal(currentMonth,rest,d,"absence"),
         getVal(currentMonth,rest,d,"slDay"),getVal(currentMonth,rest,d,"slEve")
       ]);
@@ -995,17 +1038,17 @@ function exportAllCSV(type){
     allMonths.forEach(function(ym){
       var nd=daysInMonth(ym);
       for(var d=1;d<=nd;d++){
-        var fs=getVal(ym,rest,d,"fcSales"),fl=getVal(ym,rest,d,"fcLabor");
+        var fs=getVal(ym,rest,d,"fcSales"),fl=getVal(ym,rest,d,"fcLabor"),fga=getVal(ym,rest,d,"googleActual");
         if(fs||fl)rows.push([rest,ym,d,fs,fl]);
       }
     });
   }else{
-    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Omdöme","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
+    rows.push(["Restaurang","Månad","Dag","Försäljning","Labor Cost","Timmar","Waste","Ticket Time","Google Betyg","Google Antal","Optiqo","Sjukfrånvaro","SL Dag","SL Kväll"]);
     allMonths.forEach(function(ym){
       var nd=daysInMonth(ym);
       for(var d=1;d<=nd;d++){
         var s=getVal(ym,rest,d,"sales");
-        if(s)rows.push([rest,ym,d,s,getVal(ym,rest,d,"laborCost"),getVal(ym,rest,d,"hours"),getVal(ym,rest,d,"waste"),getVal(ym,rest,d,"tt"),getVal(ym,rest,d,"google"),getVal(ym,rest,d,"optiqo"),getVal(ym,rest,d,"absence"),getVal(ym,rest,d,"slDay"),getVal(ym,rest,d,"slEve")]);
+        if(s)rows.push([rest,ym,d,s,getVal(ym,rest,d,"laborCost"),getVal(ym,rest,d,"hours"),getVal(ym,rest,d,"waste"),getVal(ym,rest,d,"tt"),getVal(ym,rest,d,"google"),getVal(ym,rest,d,"googleCount"),getVal(ym,rest,d,"optiqo"),getVal(ym,rest,d,"absence"),getVal(ym,rest,d,"slDay"),getVal(ym,rest,d,"slEve")]);
       }
     });
   }
@@ -1058,6 +1101,7 @@ function handleImport(evt){
         state.months[ym][rest][d].waste=parseFloat(cols[6])||0;
         state.months[ym][rest][d].tt=parseFloat(cols[7])||0;
         state.months[ym][rest][d].google=parseFloat(cols[8])||0;
+          state.months[ym][rest][d].googleCount=parseFloat(cols[9])||0;
         state.months[ym][rest][d].optiqo=parseFloat(cols[9])||0;
         state.months[ym][rest][d].absence=parseFloat(cols[10])||0;
         if(cols[11])state.months[ym][rest][d].slDay=cols[11];
@@ -1127,6 +1171,7 @@ function render(){
   var nd=daysInMonth(currentMonth);
 
   if(currentPage==="messages"){renderMessages();return;}
+  if(currentPage==="reminders"){renderReminders();return;}
   if(currentPage==="forecast")renderForecast(nd);
   else if(currentPage==="results")renderResults(nd);
   else if(currentPage==="overview")renderOverview(nd);
@@ -1149,6 +1194,14 @@ function renderForecast(nd){
 
   html+='<div class="actions"><button class="btn btn-primary" onclick="savePage()">Spara</button><span class="save-msg" id="saveMsg">\u2713 Sparat</span><div class="actions-right"><button class="btn btn-outline btn-icon" onclick="triggerImport(\'forecast\')">\u2191 Importera</button><button class="btn btn-outline btn-icon" onclick="exportCSV(\'forecast\')">\u2193 M\u00e5nad</button><button class="btn btn-outline btn-icon" onclick="exportAllCSV(\'forecast\')">\u2193 Alla</button><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div></div>';
 
+  // Google actual rating - single value per restaurant per month
+  var curGoogleActual=0;
+  try{curGoogleActual=state.months[currentMonth][rest][0]&&state.months[currentMonth][rest][0].googleActual?state.months[currentMonth][rest][0].googleActual:0;}catch(e){}
+  html+='<div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">';
+  html+='<div style="font-size:13px;font-weight:700;color:var(--text)">Aktuellt Google-betyg</div>';
+  html+='<input type="number" id="fc_google_actual" value="'+(curGoogleActual||'')+'" placeholder="T.ex. 4.3" step="0.1" min="1" max="5" style="width:100px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:14px;font-family:inherit;font-weight:700;outline:none">';
+  html+='<div style="font-size:11px;color:var(--dim)">Mata in restaurangens nuvarande Google-betyg h\u00e4r</div>';
+  html+='</div>';
   html+='<div class="card" style="overflow-x:auto"><h3>'+rest+' &mdash; Prognos</h3>';
   html+='<table><thead><tr><th>Dag</th><th>FC F\u00f6rs\u00e4ljning (kr)</th><th>FC Labor Cost (kr)</th><th>LC %</th></tr></thead><tbody>';
   for(var d=1;d<=nd;d++){
@@ -1204,7 +1257,7 @@ function updateFcLc(){
 }
 
 // ========== PAGE: RESULTAT ==========
-var RESULT_FIELDS=["sales","laborCost","hours","waste","tt","google","optiqo","absence","slDay","slEve"];
+var RESULT_FIELDS=["sales","laborCost","hours","waste","tt","google","googleCount","optiqo","absence","slDay","slEve"];
 
 function dayCompleteness(ym,rest,d){
   var filled=0;
@@ -1232,6 +1285,7 @@ function saveDayCard(){
   setVal(currentMonth,rest,d,"waste",parseFloat(f("rd_waste"))||0);
   setVal(currentMonth,rest,d,"tt",parseFloat(f("rd_tt"))||0);
   setVal(currentMonth,rest,d,"google",parseFloat(f("rd_google"))||0);
+  setVal(currentMonth,rest,d,"googleCount",parseFloat(f("rd_googlecount"))||0);
   setVal(currentMonth,rest,d,"optiqo",parseFloat(f("rd_optiqo"))||0);
   setVal(currentMonth,rest,d,"absence",parseFloat(f("rd_absence"))||0);
   setVal(currentMonth,rest,d,"slDay",f("rd_slday").trim());
@@ -1274,7 +1328,8 @@ function renderResults(nd){
     html+='<div class="section-label">Kvalitet</div>';
     html+='<div class="form-grid">';
     html+='<div class="form-group"><label>Ticket Time (sek)</label><input type="number" id="rd_tt" value="'+(getVal(currentMonth,rest,d,"tt")||"")+'" placeholder="0"></div>';
-    html+='<div class="form-group"><label>Google Omd\u00f6me</label><input type="number" id="rd_google" value="'+(getVal(currentMonth,rest,d,"google")||"")+'" placeholder="0.0" step="0.1"></div>';
+    html+='<div class="form-group"><label>Google antal omd\u00f6men</label><input type="number" id="rd_googlecount" value="'+(getVal(currentMonth,rest,d,"googleCount")||"")+'" placeholder="0" min="0"></div>';
+    html+='<div class="form-group"><label>Google snittbetyg (1-5)</label><input type="number" id="rd_google" value="'+(getVal(currentMonth,rest,d,"google")||"")+'" placeholder="0.0" step="0.1" min="1" max="5"></div>';
     html+='<div class="form-group"><label>Optiqo %</label><input type="number" id="rd_optiqo" value="'+(getVal(currentMonth,rest,d,"optiqo")||"")+'" placeholder="0" step="0.1"></div>';
     html+='</div></div>';
 
@@ -1364,9 +1419,20 @@ function savePage(){
       var fl=document.getElementById("fc_l_"+ri+"_"+d);
       if(fs)setVal(currentMonth,rest,d,"fcSales",parseFloat(fs.value)||0);
       if(fl)setVal(currentMonth,rest,d,"fcLabor",parseFloat(fl.value)||0);
+
     }
   }
 
+  // Save Google actual rating (month-level, stored at day=0)
+  if(currentPage==="forecast"){
+    var gaEl=document.getElementById("fc_google_actual");
+    if(gaEl){
+      if(!state.months[currentMonth])state.months[currentMonth]={};
+      if(!state.months[currentMonth][selectedRest])state.months[currentMonth][selectedRest]={};
+      if(!state.months[currentMonth][selectedRest][0])state.months[currentMonth][selectedRest][0]={};
+      state.months[currentMonth][selectedRest][0].googleActual=parseFloat(gaEl.value)||0;
+    }
+  }
   saveState();
   var msg=document.getElementById("saveMsg");if(msg){msg.classList.add("show");setTimeout(function(){msg.classList.remove("show");},2000);}
 }
@@ -1390,8 +1456,8 @@ function renderOverview(nd){
   var lastFilledDay=getLastFilledDay(currentMonth,sel);
 
   // Aggregate only selected restaurants up to maxDay
-  var tS=0,tL=0,tW=0,tH=0,tAb=0,ttS=0,ttC=0,tFcS=0,tFcL=0,tGoog=0,tGoogC=0;
-  var dailySales=[],dailyLabor=[],dailyLp=[],dailyTT=[],dailyAbs=[];
+  var tS=0,tL=0,tW=0,tH=0,tAb=0,ttS=0,ttC=0,tFcS=0,tFcL=0,tGoog=0,tGoogC=0,tGoogCount=0,latestGoogleActual=0;
+  var dailySales=[],dailyLabor=[],dailyLp=[],dailyTT=[],dailyAbs=[],dailyProd=[];
   var labels=[];
   var restTotals={};
   sel.forEach(function(r){restTotals[r]={sales:0,labor:0,waste:0,hours:0,absence:0,tt:0,ttc:0,fcSales:0,fcLabor:0,dailySales:[]};});
@@ -1411,7 +1477,9 @@ function renderOverview(nd){
       var g=getVal(currentMonth,r,d,"google");
       ds+=s;dl+=l;dh+=h;dw+=w;da+=a;dfs+=fs;dfl+=fl;
       if(t>0){dtt+=t;dtc++;}
+      var gc=getVal(currentMonth,r,d,"googleCount");
       if(g>0){tGoog+=g;tGoogC++;}
+      if(gc>0)tGoogCount+=gc;
       restTotals[r].sales+=s;restTotals[r].labor+=l;restTotals[r].waste+=w;
       restTotals[r].hours+=h;restTotals[r].absence+=a;restTotals[r].fcSales+=fs;restTotals[r].fcLabor+=fl;
       if(t>0){restTotals[r].tt+=t;restTotals[r].ttc++;}
@@ -1423,22 +1491,36 @@ function renderOverview(nd){
     dailyLp.push(ds?(dl/ds*100):0);
     dailyTT.push(dtc?dtt/dtc:0);
     dailyAbs.push(da);
+    dailyProd.push(dh>0?Math.round(ds/dh):0);
   }
 
+  // Get Google actual ratings from month-level (day=0)
+  sel.forEach(function(r){
+    try{var ga=state.months[currentMonth][r][0]&&state.months[currentMonth][r][0].googleActual?state.months[currentMonth][r][0].googleActual:0;if(ga>0)latestGoogleActual=ga;}catch(e){}
+  });
   var lp=tS?tL/tS*100:0,wp=tS?tW/tS*100:0,avgTT=ttC?ttS/ttC:0;
   var abRate=(tH+tAb)?(tAb/(tH+tAb)*100):0;
   var avgGoog=tGoogC?(tGoog/tGoogC):0;
   var dayLabel=singleDay>0?maxDay+" "+dayName(currentMonth,maxDay):"Hela m\u00e5naden ("+nd+" dagar)";
+  var salesSub;
+  if(singleDay>0){
+    var p=currentMonth.split("-");
+    var fullDate=dayName(currentMonth,maxDay)+" "+maxDay+"/"+parseInt(p[1]);
+    salesSub=fullDate;
+  } else {
+    salesSub=fmt(maxDay?Math.round(tS/maxDay):0)+" kr/dag snitt \u00b7 "+maxDay+" dagar";
+  }
 
   // KPIs
-  function kpi(title,main,unit,sub,color){
+  function kpi(title,main,unit,sub,color,badge){
     var bc=color==="red"?"var(--red)":color==="green"?"var(--green)":"rgba(255,255,255,0.2)";
-    return'<div class="kpi" style="border-color:'+bc+'"><div class="kpi-top"><span class="kpi-title">'+title+'</span></div><div class="kpi-row"><span class="kpi-main">'+main+'<span class="kpi-unit">'+unit+'</span></span></div><div class="kpi-sub">'+sub+'</div></div>';
+    var badgeHtml=badge?'<span style="font-size:11px;font-weight:800;background:rgba(196,30,58,0.15);color:var(--accent);padding:3px 8px;border-radius:8px">'+badge+'</span>':"";
+    return'<div class="kpi" style="border-color:'+bc+'"><div class="kpi-top"><span class="kpi-title">'+title+'</span>'+badgeHtml+'</div><div class="kpi-row"><span class="kpi-main">'+main+'<span class="kpi-unit">'+unit+'</span></span></div><div class="kpi-sub">'+sub+'</div></div>';
   }
   document.getElementById("kpis").innerHTML=
-    kpi("F\u00f6rs\u00e4ljning",fmt(tS),"kr",dayLabel+" | "+fmt(maxDay?Math.round(tS/maxDay):0)+" kr/dag","")
-    +kpi("Personalkostnad",fmtPct(lp),"",fmt(tL)+" kr | "+fmt(tH)+" tim | "+fmt(tH?Math.round(tS/tH):0)+" kr/tim",lp>25?"red":"green")
-    +kpi("Google Omd\u00f6me",avgGoog?avgGoog.toFixed(1):"—","",tGoogC+" omd\u00f6men registrerade",avgGoog>=4.5?"green":avgGoog>=4.0?"":"red")
+    kpi("F\u00f6rs\u00e4ljning",fmt(tS),"kr",salesSub,"")
+    +kpi("Personalkostnad",fmtPct(lp),"",fmt(tL)+" kr | "+fmt(tH)+" tim",lp>25?"red":"green")
+    +kpi("Google Omd\u00f6me",avgGoog?avgGoog.toFixed(1):"—","",tGoogCount+" omd\u00f6men",avgGoog>=4.5?"green":avgGoog>=4.0?"":"red",latestGoogleActual?latestGoogleActual.toFixed(1):"")
     +kpi("Ticket Time",fmtMM(avgTT),"",fmt(Math.round(avgTT))+" sek snitt",avgTT>360?"red":"green")
     +kpi("Sjukfr\u00e5nvaro",fmtPct(abRate),"",fmt(Math.round(tAb))+" tim totalt",abRate>2?"red":"green");
 
@@ -1465,17 +1547,20 @@ function renderOverview(nd){
 
   // Forecast plan
   var fcPlan=[];for(var d2=startDay;d2<=maxDay;d2++){var dfs2=0;sel.forEach(function(r){dfs2+=getVal(currentMonth,r,d2,"fcSales");});fcPlan.push(dfs2);}
-  var fcDiff=dailySales.map(function(v,i){return v-fcPlan[i];});
+  var fcDiff=dailySales.map(function(v,i){return v>0?(v-fcPlan[i]):0;});
+
+  var multiRest=sel.length>1;
 
   el.innerHTML=pickerHtml+'<div class="grid grid-2">'+
     '<div class="card"><h3>Daglig f\u00f6rs\u00e4ljning</h3><div class="chart-wrap"><canvas id="c1"></canvas></div></div>'+
     '<div class="card"><h3>Labor % per dag</h3><div class="chart-wrap"><canvas id="c2"></canvas></div></div>'+
     '<div class="card"><h3>Prognos vs Utfall</h3><div class="chart-wrap"><canvas id="c3"></canvas></div></div>'+
     '<div class="card"><h3>Daglig diff (Utfall - Prognos)</h3><div class="chart-wrap"><canvas id="c4"></canvas></div></div>'+
-    '<div class="card card-full"><h3>F\u00f6rs\u00e4ljning per restaurang</h3><div class="chart-wrap tall"><canvas id="c5"></canvas></div></div>'+
+    (multiRest?'<div class="card card-full"><h3>F\u00f6rs\u00e4ljning per restaurang</h3><div class="chart-wrap tall"><canvas id="c5"></canvas></div></div>':'')+
     '<div class="card"><h3>Ticket Time per dag</h3><div class="chart-wrap"><canvas id="c6"></canvas></div></div>'+
     '<div class="card"><h3>Sjuktimmar per dag</h3><div class="chart-wrap"><canvas id="c7"></canvas></div></div>'+
-    '<div class="card card-full" style="overflow-x:auto"><h3>J\u00e4mf\u00f6relse per restaurang</h3><table><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Timmar</th><th>Ticket Time</th></tr></thead><tbody>'+compRows+'</tbody></table></div>'+
+    '<div class="card"><h3>Produktivitet (kr/tim)</h3><div class="chart-wrap"><canvas id="c8"></canvas></div></div>'+
+    (multiRest?'<div class="card card-full" style="overflow-x:auto"><h3>J\u00e4mf\u00f6relse per restaurang</h3><table><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Timmar</th><th>Ticket Time</th></tr></thead><tbody>'+compRows+'</tbody></table></div>':'')+
     '</div>';
 
   makeChart("c1",{type:"line",data:{labels:labels,datasets:[{label:"F\u00f6rs\u00e4ljning",data:dailySales,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
@@ -1484,9 +1569,10 @@ function renderOverview(nd){
   makeChart("c4",{type:"bar",data:{labels:labels,datasets:[{label:"Diff",data:fcDiff,backgroundColor:fcDiff.map(function(v){return v>=0?"#22C55E":"#EF4444";}),borderRadius:4}]}});
 
   var restDS=sel.map(function(r){var i=state.restaurants.indexOf(r);return{label:r,data:restTotals[r].dailySales,borderColor:CC[i%CC.length],tension:0.35,pointRadius:1,borderWidth:2};});
-  makeChart("c5",{type:"line",data:{labels:labels,datasets:restDS}});
+  if(multiRest)makeChart("c5",{type:"line",data:{labels:labels,datasets:restDS}});
   makeChart("c6",{type:"line",data:{labels:labels,datasets:[{label:"TT (sek)",data:dailyTT,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
   makeChart("c7",{type:"bar",data:{labels:labels,datasets:[{label:"Sjuktimmar",data:dailyAbs,backgroundColor:"#EF4444",borderRadius:4}]}});
+  makeChart("c8",{type:"bar",data:{labels:labels,datasets:[{label:"kr/tim",data:dailyProd,backgroundColor:"#3B82F6",borderRadius:4}]}});
 }
 
 
@@ -1735,6 +1821,212 @@ setInterval(function(){
   });
 },3000);
 
+
+// ========== PAGE: PÅMINNELSER ==========
+var REMINDER_ADMIN="marcus.broman@misteryork.se";
+var remGroups=[];  // [{id,name,members:[email,...],createdBy}]
+var remItems=[];   // [{id,groupId,body,from,fromName,ts}]
+var remOpenGroup=null;
+
+function isRemAdmin(){return currentUser&&currentUser.email&&currentUser.email.toLowerCase()===REMINDER_ADMIN;}
+
+function loadReminders(){
+  if(!currentUser)return Promise.resolve();
+  var me=currentUser.email.toLowerCase();
+  // Load groups where user is a member or is admin
+  return db.collection("reminderGroups").get().then(function(snap){
+    remGroups=[];
+    snap.forEach(function(doc){
+      var d=doc.data();d.id=doc.id;
+      var members=(d.members||[]).map(function(m){return m.toLowerCase();});
+      if(members.indexOf(me)>=0||me===REMINDER_ADMIN){
+        remGroups.push(d);
+      }
+    });
+    // Load all reminder items for these groups
+    if(remGroups.length===0){remItems=[];return;}
+    var gids=remGroups.map(function(g){return g.id;});
+    return db.collection("reminders").where("groupId","in",gids).limit(500).get().then(function(snap2){
+      remItems=[];
+      snap2.forEach(function(doc){var d=doc.data();d.id=doc.id;remItems.push(d);});
+      remItems.sort(function(a,b){
+        var ta=a.ts?(a.ts.seconds?a.ts.seconds*1000:(typeof a.ts==="number"?a.ts:0)):0;
+        var tb=b.ts?(b.ts.seconds?b.ts.seconds*1000:(typeof b.ts==="number"?b.ts:0)):0;
+        return tb-ta;
+      });
+    });
+  }).catch(function(e){console.error("Reminders load:",e);});
+}
+
+function renderReminders(){
+  document.getElementById("kpis").innerHTML="";
+  var admin=isRemAdmin();
+  var h='<div class="rem-layout'+(remOpenGroup?' group-open':'')+'">';
+
+  // Sidebar
+  h+='<div class="rem-sidebar">';
+  h+='<div class="rem-sidebar-head"><h3>P\u00e5minnelser</h3>';
+  if(admin){
+    h+='<button class="chat-new-btn" onclick="createReminderGroup()" title="Skapa grupp"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>';
+  }
+  h+='</div><div class="rem-groups">';
+  if(remGroups.length===0){
+    h+='<div class="rem-empty" style="padding:40px 16px;font-size:12px">'+(admin?'Skapa en grupp med + knappen':'Inga p\u00e5minnelsegrupper \u00e4nnu')+'</div>';
+  }
+  remGroups.forEach(function(g){
+    var active=(remOpenGroup===g.id)?" active":"";
+    var cnt=(g.members||[]).length+" medlem"+(((g.members||[]).length!==1)?"mar":"");
+    var itemCnt=remItems.filter(function(r){return r.groupId===g.id;}).length;
+    h+='<div class="rem-group'+active+'" onclick="openRemGroup(\''+g.id+'\')">';
+    h+='<div class="rem-group-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>';
+    h+='<div class="rem-group-info"><div class="rem-group-name">'+escH(g.name)+'</div>';
+    h+='<div class="rem-group-count">'+cnt+' \u00b7 '+itemCnt+' p\u00e5minnelser</div></div></div>';
+  });
+  h+='</div></div>';
+
+  // Main
+  h+='<div class="rem-main">';
+  if(remOpenGroup){
+    var grp=remGroups.find(function(g){return g.id===remOpenGroup;});
+    if(grp){
+      h+='<div class="rem-header"><div class="rem-header-name">'+escH(grp.name)+'</div>';
+      if(admin){
+        h+='<div class="rem-header-actions">';
+        h+='<button class="btn btn-outline" style="font-size:11px;padding:6px 12px" onclick="editRemGroup(\''+grp.id+'\')">Hantera</button>';
+        h+='<button class="btn btn-outline" style="font-size:11px;padding:6px 12px;color:var(--red)" onclick="deleteRemGroup(\''+grp.id+'\')">Ta bort</button>';
+        h+='</div>';
+      }
+      h+='</div>';
+      // Members
+      h+='<div class="rem-members"><div class="rem-members-title">Medlemmar</div><div class="rem-member-list">';
+      (grp.members||[]).forEach(function(email){
+        var nm=chatNameCache[email]||email;
+        h+='<div class="rem-member-chip"><div class="mini-av" style="background:'+avatarColor(email)+'">'+getInitials(nm)+'</div>'+escH(nm);
+        if(admin)h+='<span class="rem-x" onclick="event.stopPropagation();removeRemMember(\''+grp.id+'\',\''+escH(email.replace(/'/g,"\\'"))+'\')">\u00d7</span>';
+        h+='</div>';
+      });
+      h+='</div>';
+      if(admin){
+        h+='<div class="rem-add-member"><input type="email" id="remAddEmail" placeholder="L\u00e4gg till e-post..." onkeydown="if(event.key===\'Enter\')addRemMember(\''+grp.id+'\')"><button class="btn btn-primary" style="font-size:11px;padding:6px 12px" onclick="addRemMember(\''+grp.id+'\')">L\u00e4gg till</button></div>';
+      }
+      h+='</div>';
+      // Feed
+      h+='<div class="rem-feed">';
+      var groupItems=remItems.filter(function(r){return r.groupId===grp.id;});
+      if(groupItems.length===0){
+        h+='<div class="rem-empty">Inga p\u00e5minnelser skickade \u00e4nnu</div>';
+      }
+      groupItems.forEach(function(r){
+        var ts=r.ts?(new Date(r.ts.seconds?r.ts.seconds*1000:r.ts)).toLocaleDateString("sv-SE",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+        h+='<div class="rem-card"><div class="rem-card-head"><span class="rem-card-from">'+escH(r.fromName||r.from)+'</span><span class="rem-card-time">'+ts+'</span></div>';
+        h+='<div class="rem-card-body">'+escH(r.body)+'</div></div>';
+      });
+      h+='</div>';
+      // Compose (admin only)
+      if(admin){
+        h+='<div class="rem-compose">';
+        h+='<textarea id="remBody" placeholder="Skriv en p\u00e5minnelse till gruppen..."></textarea>';
+        h+='<div class="rem-compose-row"><button class="btn btn-primary" onclick="sendReminder(\''+grp.id+'\')">Skicka p\u00e5minnelse</button></div>';
+        h+='</div>';
+      }
+    }
+  } else {
+    h+='<div class="rem-empty">V\u00e4lj en grupp</div>';
+  }
+  h+='</div></div>';
+  document.getElementById("content").innerHTML=h;
+}
+
+function openRemGroup(id){
+  remOpenGroup=id;
+  // Look up names for members
+  var grp=remGroups.find(function(g){return g.id===id;});
+  if(grp){
+    var lookups=(grp.members||[]).map(function(email){return lookupNameByEmail(email);});
+    Promise.all(lookups).then(function(){renderReminders();});
+  } else {
+    renderReminders();
+  }
+}
+
+function createReminderGroup(){
+  showCustomModal("Namn på gruppen","",true).then(function(name){
+    if(!name)return;
+    db.collection("reminderGroups").add({
+      name:name,
+      members:[currentUser.email.toLowerCase()],
+      createdBy:currentUser.email.toLowerCase()
+    }).then(function(){
+      loadReminders().then(function(){renderReminders();});
+    });
+  });
+}
+
+function deleteRemGroup(id){
+  showCustomModal("Ta bort gruppen? Alla påminnelser försvinner.","",true).then(function(val){
+    if(!val)return;
+    db.collection("reminderGroups").doc(id).delete().then(function(){
+      remOpenGroup=null;
+      loadReminders().then(function(){renderReminders();});
+    });
+  });
+}
+
+function editRemGroup(id){
+  var grp=remGroups.find(function(g){return g.id===id;});
+  if(!grp)return;
+  showCustomModal("Byt namn på gruppen",grp.name,true).then(function(name){
+    if(!name)return;
+    db.collection("reminderGroups").doc(id).update({name:name}).then(function(){
+      grp.name=name;
+      renderReminders();
+    });
+  });
+}
+
+function addRemMember(groupId){
+  var el=document.getElementById("remAddEmail");
+  var email=(el?el.value:"").trim().toLowerCase();
+  if(!email||!email.includes("@")){showCustomModal("Ange en giltig e-postadress","",false);return;}
+  var grp=remGroups.find(function(g){return g.id===groupId;});
+  if(!grp)return;
+  var members=grp.members||[];
+  if(members.indexOf(email)>=0){showCustomModal("Redan medlem","",false);return;}
+  members.push(email);
+  db.collection("reminderGroups").doc(groupId).update({members:members}).then(function(){
+    grp.members=members;
+    lookupNameByEmail(email).then(function(){renderReminders();});
+  });
+}
+
+function removeRemMember(groupId,email){
+  var grp=remGroups.find(function(g){return g.id===groupId;});
+  if(!grp)return;
+  grp.members=(grp.members||[]).filter(function(m){return m!==email;});
+  db.collection("reminderGroups").doc(groupId).update({members:grp.members}).then(function(){
+    renderReminders();
+  });
+}
+
+function sendReminder(groupId){
+  var el=document.getElementById("remBody");
+  var body=(el?el.value:"").trim();
+  if(!body){showCustomModal("Skriv en påminnelse","",false);return;}
+  el.value="";
+  var item={
+    groupId:groupId,
+    from:currentUser.email,
+    fromName:cachedDisplayName||currentUser.email,
+    body:body,
+    ts:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  // Optimistic
+  remItems.unshift({groupId:groupId,from:currentUser.email,fromName:cachedDisplayName||currentUser.email,body:body,ts:{seconds:Math.floor(Date.now()/1000)},id:"_p_"+Date.now()});
+  renderReminders();
+  db.collection("reminders").add(item).then(function(){
+    loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){showCustomModal("Kunde inte skicka: "+err.message,"",false);});
+}
 
 // ========== INIT ==========
 Chart.defaults.font.family="'Plus Jakarta Sans','Segoe UI',sans-serif";
