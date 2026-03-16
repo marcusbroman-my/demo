@@ -66,6 +66,19 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',-app
 .card h3{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;font-weight:700;}
 .chart-wrap{position:relative;width:100%;height:280px;min-width:0;}
 .chart-wrap.tall{height:360px;}
+.day-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.day-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;transition:all 0.15s;}
+.day-stat:hover{border-color:var(--dim);}
+.day-stat .ds-label{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.day-stat .ds-value{font-size:26px;font-weight:800;color:var(--text);line-height:1.1;}
+.day-stat .ds-unit{font-size:13px;font-weight:500;color:var(--muted);margin-left:2px;}
+.day-stat .ds-sub{font-size:11px;color:var(--dim);margin-top:4px;}
+.day-stat.green{border-left:3px solid var(--green);}
+.day-stat.red{border-left:3px solid var(--red);}
+.day-stat.neutral{border-left:3px solid var(--accent);}
+.day-rest-table{width:100%;border-collapse:collapse;margin-top:16px;}
+.day-rest-table th,.day-rest-table td{padding:8px 10px;text-align:left;font-size:12px;border-bottom:1px solid var(--border);}
+.day-rest-table th{color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;font-size:10px;}
 /* Table input */
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{padding:10px 12px;text-align:left;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);font-weight:700;}
@@ -916,7 +929,15 @@ function showLogin(){
 auth.onAuthStateChanged(function(user){
   if(user){
     currentUser=user;
-    loadState().then(function(){return loadMessages();}).then(function(){return loadReminders();}).then(function(){return loadProfilePic();}).then(function(){
+    loadState().then(function(){return loadRestColors();}).then(function(){return loadMessages();}).then(function(){return loadReminders();}).then(function(){return loadProfilePic();}).then(function(){
+      var now=new Date();
+      currentMonth=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
+      mpYear=now.getFullYear();
+      updateMpDisplay();
+      showDashboard();
+      render();
+    }).catch(function(e){
+      console.error("Load chain error:",e);
       var now=new Date();
       currentMonth=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
       mpYear=now.getFullYear();
@@ -1011,6 +1032,10 @@ function closeModal(){
   if(modalResolve){var r=modalResolve;modalResolve=null;r(null);}
 }
 function modalOutsideClick(e){if(e.target===document.getElementById("modalOverlay"))closeModal();}
+
+function showCustomModal(msg,defaultVal,showInput){
+  return openModal(showInput?"":"",msg,"",defaultVal||"","OK",showInput);
+}
 
 function addRestaurantPrompt(){
   if(!isAdmin)return;
@@ -1225,7 +1250,9 @@ function renderForecast(nd){
   if(state.restaurants.length>1){
     html+='<div class="rest-pick">';
     state.restaurants.forEach(function(r){
-      html+='<button class="rest-pill'+(r===rest?" active":"")+'" onclick="pickRest(\''+r.replace(/'/g,"\\'")+"')\">"+r+'</button>';
+      var ac=r===rest?" active":"";
+      var col=getRestColor(r);
+      html+='<button class="rest-pill'+ac+'" style="'+(ac?'background:'+col+';border-color:'+col:'border-left:3px solid '+col)+'" onclick="pickRest(\''+r.replace(/'/g,"\\'")+"')\">"+r+'</button>';
     });
     html+='</div>';
   }
@@ -1349,7 +1376,9 @@ function renderResults(nd){
   if(state.restaurants.length>1){
     html+='<div class="rest-pick">';
     state.restaurants.forEach(function(r){
-      html+='<button class="rest-pill'+(r===rest?" active":"")+'" onclick="pickRest(\''+r.replace(/'/g,"\\'")+"')\">"+r+'</button>';
+      var ac=r===rest?" active":"";
+      var col=getRestColor(r);
+      html+='<button class="rest-pill'+ac+'" style="'+(ac?'background:'+col+';border-color:'+col:'border-left:3px solid '+col)+'" onclick="pickRest(\''+r.replace(/'/g,"\\'")+"')\">"+r+'</button>';
     });
     html+='</div>';
   }
@@ -1505,7 +1534,8 @@ function renderOverview(nd){
 
   // Aggregate only selected restaurants up to maxDay
   var tS=0,tL=0,tW=0,tH=0,tAb=0,ttS=0,ttC=0,tFcS=0,tFcL=0,tGoog=0,tGoogC=0,tGoogCount=0,latestGoogleActual=0;
-  var dailySales=[],dailyLabor=[],dailyLp=[],dailyTT=[],dailyAbs=[],dailyProd=[];
+  var dailySales=[],dailyLabor=[],dailyLp=[],dailyTT=[],dailyAbs=[],dailyProd=[],dailyWaste=[],dailyOptiqo=[];
+  var filledSalesDays=0;
   var labels=[];
   var restTotals={};
   sel.forEach(function(r){restTotals[r]={sales:0,labor:0,waste:0,hours:0,absence:0,tt:0,ttc:0,fcSales:0,fcLabor:0,dailySales:[]};});
@@ -1534,12 +1564,17 @@ function renderOverview(nd){
       restTotals[r].dailySales.push(s);
     });
     tS+=ds;tL+=dl;tH+=dh;tW+=dw;tAb+=da;tFcS+=dfs;tFcL+=dfl;
+    if(ds>0) filledSalesDays++;
     if(dtc>0){ttS+=dtt/dtc;ttC++;}
     dailySales.push(ds);dailyLabor.push(dl);
     dailyLp.push(ds?(dl/ds*100):0);
     dailyTT.push(dtc?dtt/dtc:0);
     dailyAbs.push(da);
     dailyProd.push(dh>0?Math.round(ds/dh):0);
+    dailyWaste.push(dw);
+    var dOpt=0,dOptC=0;
+    sel.forEach(function(r){var o=getVal(currentMonth,r,d,"optiqo");if(o>0){dOpt+=o;dOptC++;}});
+    dailyOptiqo.push(dOptC>0?Math.round(dOpt/dOptC):0);
   }
 
   // Get Google actual ratings from month-level (day=0)
@@ -1556,7 +1591,7 @@ function renderOverview(nd){
     var fullDate=dayName(currentMonth,maxDay)+" "+maxDay+"/"+parseInt(p[1]);
     salesSub=fullDate;
   } else {
-    salesSub=fmt(maxDay?Math.round(tS/maxDay):0)+" kr/dag snitt \u00b7 "+maxDay+" dagar";
+    salesSub=fmt(filledSalesDays?Math.round(tS/filledSalesDays):0)+" kr/dag snitt \u00b7 "+filledSalesDays+" dagar rapporterade";
   }
 
   // KPIs
@@ -1581,7 +1616,7 @@ function renderOverview(nd){
     pickerHtml='<div class="ms-wrap">';
     state.restaurants.forEach(function(r,i){
       var chk=sel.indexOf(r)>=0;
-      pickerHtml+='<button class="ms-chip'+(chk?" checked":"")+'" onclick="toggleRestOverview(\''+r.replace(/'/g,"\\'")+"')\">"+'<span class="dot" style="background:'+CC[i%CC.length]+'"></span>'+r+'</button>';
+      pickerHtml+='<button class="ms-chip'+(chk?" checked":"")+'" onclick="toggleRestOverview(\''+r.replace(/'/g,"\\'")+"')\">"+'<span class="dot" style="background:'+getRestColor(r)+'"></span>'+r+'</button>';
     });
     pickerHtml+='</div>';
   }
@@ -1590,7 +1625,7 @@ function renderOverview(nd){
   var compRows=sel.map(function(r,idx){
     var i=state.restaurants.indexOf(r);
     var rt=restTotals[r];var rlp=rt.sales?rt.labor/rt.sales*100:0;var rwp=rt.sales?rt.waste/rt.sales*100:0;
-    return'<tr><td style="font-weight:700;color:'+CC[i%CC.length]+'">'+r+'</td><td>'+fmt(rt.sales)+' kr</td><td style="color:'+(rlp>25?"var(--red)":"var(--green)")+'">'+fmtPct(rlp)+'</td><td style="color:'+(rwp>1?"var(--red)":"var(--green)")+'">'+fmtPct(rwp)+'</td><td>'+fmt(rt.hours)+'</td><td>'+(rt.ttc?fmtMM(rt.tt/rt.ttc):"\u2014")+'</td></tr>';
+    return'<tr><td style="font-weight:700;color:'+getRestColor(r)+'">'+r+'</td><td>'+fmt(rt.sales)+' kr</td><td style="color:'+(rlp>25?"var(--red)":"var(--green)")+'">'+fmtPct(rlp)+'</td><td style="color:'+(rwp>1?"var(--red)":"var(--green)")+'">'+fmtPct(rwp)+'</td><td>'+fmt(rt.hours)+'</td><td>'+(rt.ttc?fmtMM(rt.tt/rt.ttc):"\u2014")+'</td></tr>';
   }).join("");
 
   // Forecast plan
@@ -1599,28 +1634,90 @@ function renderOverview(nd){
 
   var multiRest=sel.length>1;
 
-  el.innerHTML=pickerHtml+'<div class="grid grid-2">'+
-    '<div class="card"><h3>Daglig f\u00f6rs\u00e4ljning</h3><div class="chart-wrap"><canvas id="c1"></canvas></div></div>'+
-    '<div class="card"><h3>Labor % per dag</h3><div class="chart-wrap"><canvas id="c2"></canvas></div></div>'+
-    '<div class="card"><h3>Prognos vs Utfall</h3><div class="chart-wrap"><canvas id="c3"></canvas></div></div>'+
-    '<div class="card"><h3>Daglig diff (Utfall - Prognos)</h3><div class="chart-wrap"><canvas id="c4"></canvas></div></div>'+
-    (multiRest?'<div class="card card-full"><h3>F\u00f6rs\u00e4ljning per restaurang</h3><div class="chart-wrap tall"><canvas id="c5"></canvas></div></div>':'')+
-    '<div class="card"><h3>Ticket Time per dag</h3><div class="chart-wrap"><canvas id="c6"></canvas></div></div>'+
-    '<div class="card"><h3>Sjuktimmar per dag</h3><div class="chart-wrap"><canvas id="c7"></canvas></div></div>'+
-    '<div class="card"><h3>Produktivitet (kr/tim)</h3><div class="chart-wrap"><canvas id="c8"></canvas></div></div>'+
-    (multiRest?'<div class="card card-full" style="overflow-x:auto"><h3>J\u00e4mf\u00f6relse per restaurang</h3><table><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Timmar</th><th>Ticket Time</th></tr></thead><tbody>'+compRows+'</tbody></table></div>':'')+
-    '</div>';
+  if(singleDay>0){
+    // ===== SINGLE DAY VIEW: compact stat cards instead of charts =====
+    var d=maxDay;
+    var dS=dailySales[0]||0, dL=dailyLabor[0]||0, dLp=dailyLp[0]||0;
+    var dTT=dailyTT[0]||0, dAb=dailyAbs[0]||0, dProd=dailyProd[0]||0;
+    var dW=dailyWaste[0]||0, dOpt=dailyOptiqo[0]||0;
+    var dH=0; sel.forEach(function(r){dH+=getVal(currentMonth,r,d,"hours");});
+    var dWp=dS?(dW/dS*100):0;
+    var dFcS=0; sel.forEach(function(r){dFcS+=getVal(currentMonth,r,d,"fcSales");});
+    var dDiff=dS-dFcS;
+    var dSlD=0,dSlE=0,dGoog=0,dGoogC=0;
+    sel.forEach(function(r){
+      dSlD+=getVal(currentMonth,r,d,"slDay");dSlE+=getVal(currentMonth,r,d,"slEve");
+      var g=getVal(currentMonth,r,d,"google");if(g>0){dGoog+=g;dGoogC++;}
+    });
+    var dAvgG=dGoogC?(dGoog/dGoogC):0;
 
-  makeChart("c1",{type:"line",data:{labels:labels,datasets:[{label:"F\u00f6rs\u00e4ljning",data:dailySales,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
-  makeChart("c2",{type:"line",data:{labels:labels,datasets:[{label:"Labor %",data:dailyLp,borderColor:"#A855F7",backgroundColor:"rgba(168,85,247,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
-  makeChart("c3",{type:"line",data:{labels:labels,datasets:[{label:"Prognos",data:fcPlan,borderColor:"#556677",borderDash:[6,4],tension:0.35,pointRadius:1},{label:"Utfall",data:dailySales,borderColor:"#14B8A6",tension:0.35,pointRadius:1,borderWidth:2}]}});
-  makeChart("c4",{type:"bar",data:{labels:labels,datasets:[{label:"Diff",data:fcDiff,backgroundColor:fcDiff.map(function(v){return v>=0?"#22C55E":"#EF4444";}),borderRadius:4}]}});
+    function ds(label,val,unit,sub,cls){
+      return'<div class="day-stat '+(cls||"neutral")+'"><div class="ds-label">'+label+'</div><div class="ds-value">'+val+'<span class="ds-unit">'+unit+'</span></div>'+(sub?'<div class="ds-sub">'+sub+'</div>':'')+'</div>';
+    }
 
-  var restDS=sel.map(function(r){var i=state.restaurants.indexOf(r);return{label:r,data:restTotals[r].dailySales,borderColor:CC[i%CC.length],tension:0.35,pointRadius:1,borderWidth:2};});
-  if(multiRest)makeChart("c5",{type:"line",data:{labels:labels,datasets:restDS}});
-  makeChart("c6",{type:"line",data:{labels:labels,datasets:[{label:"TT (sek)",data:dailyTT,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
-  makeChart("c7",{type:"bar",data:{labels:labels,datasets:[{label:"Sjuktimmar",data:dailyAbs,backgroundColor:"#EF4444",borderRadius:4}]}});
-  makeChart("c8",{type:"bar",data:{labels:labels,datasets:[{label:"kr/tim",data:dailyProd,backgroundColor:"#3B82F6",borderRadius:4}]}});
+    var statsHtml='<div class="day-stats">';
+    statsHtml+=ds("F\u00f6rs\u00e4ljning",fmt(dS),"kr",dFcS?"Prognos: "+fmt(dFcS)+" kr":"","neutral");
+    statsHtml+=ds("Diff vs Prognos",(dDiff>=0?"+":"")+fmt(dDiff),"kr","",dDiff>=0?"green":"red");
+    statsHtml+=ds("Labor %",fmtPct(dLp),"",fmt(dL)+" kr",dLp>25?"red":"green");
+    statsHtml+=ds("Timmar",fmt(dH),"tim","","neutral");
+    statsHtml+=ds("Produktivitet",fmt(dProd),"kr/tim","","neutral");
+    statsHtml+=ds("Ticket Time",fmtMM(dTT),"",fmt(Math.round(dTT))+" sek",dTT>360?"red":"green");
+    statsHtml+=ds("Waste",fmt(dW),"kr",dS?fmtPct(dWp)+" av f\u00f6rs.":"",dWp>1?"red":"green");
+    statsHtml+=ds("Optiqo",dOpt+""," %","",dOpt>=90?"green":dOpt>0?"red":"neutral");
+    statsHtml+=ds("Sjukfr\u00e5nvaro",fmt(Math.round(dAb)),"tim","","neutral");
+    statsHtml+=ds("SL dag",fmt(dSlD),"","","neutral");
+    statsHtml+=ds("SL kv\u00e4ll",fmt(dSlE),"","","neutral");
+    statsHtml+=ds("Google snitt",dAvgG?dAvgG.toFixed(1):"\u2014","",dGoogC+" omd\u00f6men",dAvgG>=4.5?"green":dAvgG>=4.0?"neutral":"red");
+    statsHtml+='</div>';
+
+    // Per-restaurant breakdown if multiple
+    if(multiRest){
+      statsHtml+='<div class="card card-full" style="overflow-x:auto;margin-top:16px"><h3>Per restaurang — '+dayLabel+'</h3><table class="day-rest-table"><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Timmar</th><th>TT</th><th>Optiqo</th></tr></thead><tbody>';
+      sel.forEach(function(r){
+        var rs=getVal(currentMonth,r,d,"sales");
+        var rl=getVal(currentMonth,r,d,"laborCost");
+        var rw=getVal(currentMonth,r,d,"waste");
+        var rh=getVal(currentMonth,r,d,"hours");
+        var rt2=getVal(currentMonth,r,d,"tt");
+        var ro=getVal(currentMonth,r,d,"optiqo");
+        var rlp2=rs?rl/rs*100:0;
+        var rwp2=rs?rw/rs*100:0;
+        statsHtml+='<tr><td style="font-weight:700;color:'+getRestColor(r)+'">'+r+'</td><td>'+fmt(rs)+' kr</td><td style="color:'+(rlp2>25?"var(--red)":"var(--green)")+'">'+fmtPct(rlp2)+'</td><td style="color:'+(rwp2>1?"var(--red)":"var(--green)")+'">'+fmtPct(rwp2)+'</td><td>'+fmt(rh)+'</td><td>'+(rt2>0?fmtMM(rt2):"\u2014")+'</td><td>'+(ro>0?ro+"%":"\u2014")+'</td></tr>';
+      });
+      statsHtml+='</tbody></table></div>';
+    }
+
+    el.innerHTML=pickerHtml+statsHtml;
+
+  } else {
+    // ===== FULL MONTH VIEW: charts =====
+    el.innerHTML=pickerHtml+'<div class="grid grid-2">'+
+      '<div class="card"><h3>Daglig f\u00f6rs\u00e4ljning</h3><div class="chart-wrap"><canvas id="c1"></canvas></div></div>'+
+      '<div class="card"><h3>Labor % per dag</h3><div class="chart-wrap"><canvas id="c2"></canvas></div></div>'+
+      '<div class="card"><h3>Prognos vs Utfall</h3><div class="chart-wrap"><canvas id="c3"></canvas></div></div>'+
+      '<div class="card"><h3>Daglig diff (Utfall - Prognos)</h3><div class="chart-wrap"><canvas id="c4"></canvas></div></div>'+
+      (multiRest?'<div class="card card-full"><h3>F\u00f6rs\u00e4ljning per restaurang</h3><div class="chart-wrap tall"><canvas id="c5"></canvas></div></div>':'')+
+      '<div class="card"><h3>Ticket Time per dag</h3><div class="chart-wrap"><canvas id="c6"></canvas></div></div>'+
+      '<div class="card"><h3>Sjuktimmar per dag</h3><div class="chart-wrap"><canvas id="c7"></canvas></div></div>'+
+      '<div class="card"><h3>Produktivitet (kr/tim)</h3><div class="chart-wrap"><canvas id="c8"></canvas></div></div>'+
+      '<div class="card"><h3>Waste per dag (kr)</h3><div class="chart-wrap"><canvas id="c9"></canvas></div></div>'+
+      '<div class="card"><h3>Optiqo % per dag</h3><div class="chart-wrap"><canvas id="c10"></canvas></div></div>'+
+      (multiRest?'<div class="card card-full" style="overflow-x:auto"><h3>J\u00e4mf\u00f6relse per restaurang</h3><table><thead><tr><th>Restaurang</th><th>F\u00f6rs\u00e4ljning</th><th>Labor %</th><th>Waste %</th><th>Timmar</th><th>Ticket Time</th></tr></thead><tbody>'+compRows+'</tbody></table></div>':'')+
+      '</div>';
+
+    makeChart("c1",{type:"line",data:{labels:labels,datasets:[{label:"F\u00f6rs\u00e4ljning",data:dailySales,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
+    makeChart("c2",{type:"line",data:{labels:labels,datasets:[{label:"Labor %",data:dailyLp,borderColor:"#A855F7",backgroundColor:"rgba(168,85,247,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
+    makeChart("c3",{type:"line",data:{labels:labels,datasets:[{label:"Prognos",data:fcPlan,borderColor:"#556677",borderDash:[6,4],tension:0.35,pointRadius:1},{label:"Utfall",data:dailySales,borderColor:"#14B8A6",tension:0.35,pointRadius:1,borderWidth:2}]}});
+    makeChart("c4",{type:"bar",data:{labels:labels,datasets:[{label:"Diff",data:fcDiff,backgroundColor:fcDiff.map(function(v){return v>=0?"#22C55E":"#EF4444";}),borderRadius:4}]}});
+
+    var restDS=sel.map(function(r){return{label:r,data:restTotals[r].dailySales,borderColor:getRestColor(r),tension:0.35,pointRadius:1,borderWidth:2};});
+    if(multiRest)makeChart("c5",{type:"line",data:{labels:labels,datasets:restDS}});
+    makeChart("c6",{type:"line",data:{labels:labels,datasets:[{label:"TT (sek)",data:dailyTT,borderColor:"#14B8A6",backgroundColor:"rgba(20,184,166,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
+    makeChart("c7",{type:"bar",data:{labels:labels,datasets:[{label:"Sjuktimmar",data:dailyAbs,backgroundColor:"#EF4444",borderRadius:4}]}});
+    makeChart("c8",{type:"bar",data:{labels:labels,datasets:[{label:"kr/tim",data:dailyProd,backgroundColor:"#3B82F6",borderRadius:4}]}});
+    makeChart("c9",{type:"bar",data:{labels:labels,datasets:[{label:"Waste (kr)",data:dailyWaste,backgroundColor:"#F59E0B",borderRadius:4}]}});
+    makeChart("c10",{type:"line",data:{labels:labels,datasets:[{label:"Optiqo %",data:dailyOptiqo,borderColor:"#EC4899",backgroundColor:"rgba(236,72,153,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
+  }
 }
 
 
@@ -1698,7 +1795,7 @@ function loadMessages(){
       return lookupNameByEmail(c.email).then(function(name){c.name=name;});
     });
     return Promise.all(lookups).then(function(){updateMsgBadge();});
-  });
+  }).catch(function(e){console.error("LoadMessages error:",e);});
 }
 
 function updateMsgBadge(){
@@ -2074,6 +2171,255 @@ function sendReminder(groupId){
   db.collection("reminders").add(item).then(function(){
     loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
   }).catch(function(err){showCustomModal("Kunde inte skicka: "+err.message,"",false);});
+}
+
+// ========== RESTAURANT COLORS ==========
+var REST_COLORS=["#C41E3A","#22C55E","#3B82F6","#F59E0B","#A855F7","#EC4899","#14B8A6","#6366F1","#EF4444","#0EA5E9"];
+var restColorMap={};
+
+function loadRestColors(){
+  return db.collection("restaurantRegistry").get().then(function(snap){
+    restColorMap={};
+    snap.forEach(function(doc){
+      if(doc.data().color) restColorMap[doc.id]=doc.data().color;
+    });
+  }).catch(function(){});
+}
+
+function getRestColor(r){
+  if(restColorMap[r]) return restColorMap[r];
+  var i=state.restaurants.indexOf(r);
+  return CC[Math.max(0,i)%CC.length];
+}
+
+function setRestColor(restName,color){
+  restColorMap[restName]=color;
+  db.collection("restaurantRegistry").doc(restName).set({color:color},{merge:true}).then(function(){
+    render();
+  });
+}
+
+// ========== RESTAURANT MANAGEMENT OVERLAY ==========
+function openRestMgr(){
+  if(!isAdmin) return;
+  document.getElementById("restmgrOverlay").classList.add("open");
+  renderRestMgr();
+}
+function closeRestMgr(){
+  document.getElementById("restmgrOverlay").classList.remove("open");
+}
+
+function renderRestMgr(){
+  var wrap=document.getElementById("restmgrContent");
+  if(!wrap) return;
+  if(!state.restaurants.length){wrap.innerHTML='<div style="color:var(--dim);font-size:13px">Inga restauranger ännu.</div>';return;}
+  var promises=state.restaurants.map(function(r){
+    return db.collection("restaurantRegistry").doc(r).get().then(function(doc){
+      return {name:r,members:(doc.exists&&doc.data().members)||[],color:(doc.exists&&doc.data().color)||""};
+    });
+  });
+  Promise.all(promises).then(function(rests){
+    var h="";
+    rests.forEach(function(r){
+      var curColor=r.color||getRestColor(r.name);
+      h+='<div class="restmgr-rest">';
+      h+='<div class="restmgr-rest-header">';
+      h+='<div class="restmgr-color-dot" style="background:'+curColor+'"></div>';
+      h+='<div class="restmgr-rest-name">'+escH(r.name)+'</div>';
+      h+='</div>';
+      // Color picker
+      h+='<div class="restmgr-color-row">';
+      REST_COLORS.forEach(function(c){
+        var sel=(c===curColor)?" sel":"";
+        h+='<div class="restmgr-color-opt'+sel+'" style="background:'+c+'" onclick="setRestColor(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+c+'\');setTimeout(renderRestMgr,300)"></div>';
+      });
+      h+='</div>';
+      // Members
+      h+='<div class="restmgr-members">';
+      if(r.members.length===0) h+='<div style="color:var(--dim);font-size:11px;margin-bottom:6px">Inga medlemmar</div>';
+      r.members.forEach(function(em){
+        h+='<div class="restmgr-member"><span>'+escH(em)+'</span><button class="btn btn-danger" style="font-size:10px;padding:2px 7px" onclick="removeMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+escH(em.replace(/'/g,"\\'"))+'\')">&times;</button></div>';
+      });
+      h+='<div class="restmgr-add-row"><input id="rmgr_add_'+escH(r.name)+'" placeholder="Lägg till email..." onkeydown="if(event.key===\'Enter\')addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')"><button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')">+</button></div>';
+      h+='</div></div>';
+    });
+    wrap.innerHTML=h;
+  });
+}
+
+function addMemberMgr(restName){
+  var inp=document.getElementById("rmgr_add_"+restName);
+  if(!inp) return;
+  var email=inp.value.trim().toLowerCase();
+  if(!email||email.indexOf("@")<0){openModal("Ogiltig email","Ange en giltig emailadress.","","","OK",false);return;}
+  db.collection("restaurantRegistry").doc(restName).update({
+    members:firebase.firestore.FieldValue.arrayUnion(email)
+  }).then(function(){renderRestMgr();});
+}
+function removeMemberMgr(restName,email){
+  db.collection("restaurantRegistry").doc(restName).update({
+    members:firebase.firestore.FieldValue.arrayRemove(email)
+  }).then(function(){renderRestMgr();});
+}
+
+// ========== NOTIFICATIONS ==========
+var notifications=[];
+var notifInterval=null;
+var notifOpen=false;
+var lastNotifCheck=0;
+
+function toggleNotifDropdown(){
+  notifOpen=!notifOpen;
+  document.getElementById("notifDropdown").classList.toggle("open",notifOpen);
+  if(notifOpen){
+    // Mark as seen
+    notifications.forEach(function(n){n.seen=true;});
+    updateNotifDot();
+    renderNotifList();
+  }
+}
+
+document.addEventListener("click",function(e){
+  var w=document.querySelector(".notif-wrap");
+  if(w&&!w.contains(e.target)){
+    notifOpen=false;
+    document.getElementById("notifDropdown").classList.remove("open");
+  }
+});
+
+function updateNotifDot(){
+  var unseen=notifications.filter(function(n){return !n.seen;}).length;
+  var dot=document.getElementById("notifDot");
+  if(dot) dot.classList.toggle("show",unseen>0);
+}
+
+function renderNotifList(){
+  var list=document.getElementById("notifList");
+  if(!list) return;
+  if(notifications.length===0){list.innerHTML='<div class="notif-empty">Inga notifikationer</div>';return;}
+  var h="";
+  notifications.slice(0,20).forEach(function(n){
+    var cls="notif-item"+(n.seen?"":" unread");
+    var iconCls="notif-icon "+(n.type||"chat");
+    var icon=n.type==="reminder"?"\uD83D\uDD14":n.type==="result"?"\u2705":"\uD83D\uDCAC";
+    var ago=timeAgo(n.ts);
+    h+='<div class="'+cls+'" onclick="notifClick(\''+escH(n.type)+'\',\''+escH((n.target||"").replace(/'/g,"\\'"))+'\')">';
+    h+='<div class="'+iconCls+'">'+icon+'</div>';
+    h+='<div class="notif-body"><div class="notif-title">'+escH(n.title)+'</div><div class="notif-desc">'+escH(n.desc)+'</div><div class="notif-time">'+ago+'</div></div>';
+    h+='</div>';
+  });
+  list.innerHTML=h;
+}
+
+function notifClick(type,target){
+  notifOpen=false;
+  document.getElementById("notifDropdown").classList.remove("open");
+  if(type==="chat"){switchPage("messages");}
+  else if(type==="reminder"){switchPage("reminders");}
+  else if(type==="result"){switchPage("results");}
+}
+
+function timeAgo(ts){
+  if(!ts) return "";
+  var sec=ts.seconds||Math.floor(ts/1000);
+  var diff=Math.floor(Date.now()/1000)-sec;
+  if(diff<60) return "Nu";
+  if(diff<3600) return Math.floor(diff/60)+" min sedan";
+  if(diff<86400) return Math.floor(diff/3600)+" tim sedan";
+  return Math.floor(diff/86400)+" dagar sedan";
+}
+
+function loadNotifications(){
+  if(!currentUser) return;
+  var me=currentUser.email;
+  var now=Math.floor(Date.now()/1000);
+  var newNotifs=[];
+
+  // 1. Unread chat messages
+  var chatPromise=db.collection("messages")
+    .where("to","==",me)
+    .get().then(function(snap){
+      var senders={};
+      snap.forEach(function(doc){
+        var d=doc.data();
+        if(d.read) return;
+        var from=d.fromName||d.from;
+        if(!senders[d.from]) senders[d.from]={name:from,count:0,ts:0};
+        senders[d.from].count++;
+        var mts=d.ts?d.ts.seconds||0:0;
+        if(mts>senders[d.from].ts) senders[d.from].ts=mts;
+      });
+      Object.keys(senders).forEach(function(email){
+        var s=senders[email];
+        newNotifs.push({type:"chat",title:s.name,desc:s.count+" oläst"+(s.count>1?"a":"")+" meddelande"+(s.count>1?"n":""),ts:{seconds:s.ts},target:email,id:"chat_"+email});
+      });
+    }).catch(function(){});
+
+  // 2. Recent reminders (last 24h)
+  var cutoff=now-86400;
+  var remPromise=db.collection("reminders")
+    .get().then(function(snap){
+      snap.forEach(function(doc){
+        var d=doc.data();
+        var mts=d.ts?d.ts.seconds||0:0;
+        if(mts>cutoff&&d.from!==me){
+          newNotifs.push({type:"reminder",title:"Påminnelse",desc:(d.fromName||d.from)+": "+((d.body||"").substring(0,60)),ts:{seconds:mts},target:d.groupId||"",id:"rem_"+doc.id});
+        }
+      });
+    }).catch(function(){});
+
+  // 3. Admin: check yesterday's results completeness
+  var resultPromise=Promise.resolve();
+  if(isAdmin){
+    resultPromise=checkYesterdayResults().then(function(resultNotifs){
+      newNotifs=newNotifs.concat(resultNotifs);
+    }).catch(function(){});
+  }
+
+  Promise.all([chatPromise,remPromise,resultPromise]).then(function(){
+    // Preserve seen state from existing notifications
+    var oldMap={};
+    notifications.forEach(function(n){oldMap[n.id]=n.seen;});
+    newNotifs.forEach(function(n){
+      if(oldMap.hasOwnProperty(n.id)) n.seen=oldMap[n.id];
+      else n.seen=false;
+    });
+    // Sort by time desc
+    newNotifs.sort(function(a,b){return (b.ts.seconds||0)-(a.ts.seconds||0);});
+    notifications=newNotifs;
+    updateNotifDot();
+    if(notifOpen) renderNotifList();
+  }).catch(function(e){console.error("Notif error:",e);});
+}
+
+function checkYesterdayResults(){
+  var yesterday=new Date();
+  yesterday.setDate(yesterday.getDate()-1);
+  var ym=yesterday.getFullYear()+"-"+String(yesterday.getMonth()+1).padStart(2,"0");
+  var day=yesterday.getDate();
+  var notifs=[];
+
+  var promises=state.restaurants.map(function(r){
+    return db.collection("restaurantData").doc(r).get().then(function(doc){
+      if(!doc.exists||!doc.data().months) return;
+      try{
+        var months=JSON.parse(doc.data().months);
+        if(!months[ym]||!months[ym][day]) return;
+        var dayObj=months[ym][day];
+        var filled=0;
+        RESULT_FIELDS.forEach(function(k){
+          if(dayObj.hasOwnProperty(k)){
+            var v=dayObj[k];
+            if(v!==null&&v!==undefined&&v!=="") filled++;
+          }
+        });
+        if(filled>=RESULT_FIELDS.length){
+          notifs.push({type:"result",title:r+" — gårdagens resultat klart",desc:"Alla "+RESULT_FIELDS.length+" fält ifyllda för "+day+"/"+(yesterday.getMonth()+1),ts:{seconds:Math.floor(Date.now()/1000)},target:r,id:"result_"+r+"_"+ym+"_"+day});
+        }
+      }catch(e){}
+    });
+  });
+  return Promise.all(promises).then(function(){return notifs;});
 }
 
 // ========== INIT ==========
