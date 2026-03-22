@@ -350,74 +350,55 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
 .msg-nav-wrap{position:relative;}
 @media(max-width:700px){.chat-sidebar{width:100%;}.chat-main{display:none;}.chat-layout.conv-open .chat-sidebar{display:none;}.chat-layout.conv-open .chat-main{display:flex;}}
 
-/* Reminders */
-.rem-layout{display:flex;gap:0;height:100%;overflow:hidden;}
-.rem-sidebar{width:300px;display:flex;flex-direction:column;flex-shrink:0;background:var(--cardHover);overflow-y:auto;}
-.rem-sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;flex-shrink:0;}
-.rem-sidebar-head h3{font-size:15px;font-weight:800;color:var(--text);margin:0;}
-.rem-groups{flex:1;overflow-y:auto;}
-.rem-group{display:flex;align-items:center;gap:12px;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.1s;}
-.rem-group:hover{background:var(--cardHover);}
-.rem-group.active{background:rgba(196,30,58,0.08);}
-.rem-group-icon{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rem-group-icon svg{color:#fff;}
-.rem-group-info{flex:1;min-width:0;}
-.rem-group-name{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rem-group-count{font-size:11px;color:var(--dim);margin-top:2px;}
-.rem-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--card);}
-.rem-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--card);flex-shrink:0;}
-.rem-header-name{font-size:15px;font-weight:700;color:var(--text);}
-.rem-header-actions{display:flex;gap:8px;}
-.rem-feed{flex:1;overflow-y:auto;padding:24px;}
-.rem-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:14px;}
-.rem-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.rem-card-from{font-size:12px;font-weight:700;color:var(--accent);}
-.rem-card-time{font-size:10px;color:var(--dim);}
-.rem-card-body{font-size:14px;color:var(--text);line-height:1.6;white-space:pre-wrap;}
-.rem-compose{padding:18px 24px;border-top:1px solid var(--border);background:var(--card);flex-shrink:0;}
-.rem-compose textarea{width:100%;background:var(--cardHover);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;resize:none;min-height:60px;line-height:1.5;box-sizing:border-box;transition:border 0.15s;}
-.rem-compose textarea:focus{border-color:var(--accent);}
-.rem-compose-row{display:flex;justify-content:flex-end;margin-top:10px;}
-.rem-empty{display:flex;align-items:center;justify-content:center;flex:1;color:var(--dim);font-size:14px;font-weight:500;text-align:center;padding:20px;}
-.rem-members{padding:12px 24px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.rem-members-title{font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
-.rem-member-list{display:flex;flex-wrap:wrap;gap:5px;}
-.rem-member-chip{display:inline-flex;align-items:center;gap:4px;background:var(--cardHover);border:1px solid var(--border);border-radius:20px;padding:3px 9px 3px 3px;font-size:10px;color:var(--muted);font-weight:600;}
-.rem-member-chip .mini-av{width:18px;height:18px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;}
-.rem-member-chip .rem-x{cursor:pointer;margin-left:3px;opacity:0.5;font-size:12px;}
-.rem-member-chip .rem-x:hover{opacity:1;}
-.rem-add-member{display:flex;gap:6px;margin-top:6px;}
-.rem-add-member input{flex:1;background:var(--cardHover);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:5px 10px;font-size:11px;font-family:inherit;outline:none;box-sizing:border-box;}
-.rem-add-member input:focus{border-color:var(--accent);}
-.rem-card.checklist{border-left:3px solid var(--amber);}
-.rem-card.checklist.all-done{border-left:3px solid var(--green);border-color:var(--green);}
-.rem-cl-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
-.rem-cl-items{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
-.rem-cl-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer;padding:6px 8px;border-radius:8px;transition:background 0.1s;}
-.rem-cl-item:hover{background:var(--cardHover);}
-.rem-cl-item.checked{color:var(--dim);text-decoration:line-through;}
-.rem-cl-box{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
-.rem-cl-item.checked .rem-cl-box{background:var(--green);border-color:var(--green);color:#fff;}
-.rem-cl-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:6px;}
-.rem-cl-progress-bar{height:100%;background:var(--green);border-radius:4px;transition:width 0.3s;}
-.rem-cl-status{font-size:10px;color:var(--dim);font-weight:600;}
-.rem-cl-members{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-.rem-cl-member-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:11px;color:var(--muted);}
-.rem-cl-member-row .mini-av{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#fff;}
-.rem-cl-member-done{color:var(--green);font-weight:700;}
-.rem-cl-member-pending{color:var(--dim);}
-.rem-compose-tabs{display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.rem-compose-tab{flex:1;padding:8px 0;font-size:12px;font-weight:700;text-align:center;cursor:pointer;background:transparent;border:none;color:var(--dim);font-family:inherit;transition:all 0.12s;}
+/* Reminders - Social Feed */
+.rem-board{padding:24px 32px;max-width:680px;margin:0 auto;overflow-y:auto;height:100%;}
+.rem-compose-box{background:var(--cardHover);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;position:relative;z-index:1;}
+.rem-compose-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.rem-compose-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;flex:1;}
+.rem-compose-tab{flex:1;padding:10px 16px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;background:transparent;border:none;color:var(--dim);font-family:inherit;transition:all 0.12s;}
+.rem-compose-tab:hover{background:rgba(0,0,0,0.03);}
 .rem-compose-tab.active{background:var(--accent);color:#fff;}
-.rem-cl-input-wrap{display:flex;flex-direction:column;gap:8px;}
+.rem-filters{display:flex;gap:6px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.rem-filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--cardHover);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.12s;}
+.rem-filter-btn:hover{border-color:var(--muted);}
+.rem-filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.rem-post{background:var(--cardHover);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;position:relative;}
+.rem-post-done{border-color:var(--green);}
+.rem-post-pin{font-size:11px;font-weight:700;color:var(--amber);margin-bottom:10px;display:flex;align-items:center;gap:4px;}
+.rem-post-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.rem-post-meta{flex:1;min-width:0;}
+.rem-post-name{font-size:14px;font-weight:700;color:var(--text);}
+.rem-post-time{font-size:12px;color:var(--dim);margin-top:1px;}
+.rem-post-actions{display:flex;gap:2px;flex-shrink:0;}
+.rem-post-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.3;}
+.rem-post-body{font-size:14px;color:var(--text);line-height:1.7;white-space:pre-wrap;word-wrap:break-word;}
+.rem-read-more{background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;padding:4px 0;font-family:inherit;margin-top:4px;}
+.rem-read-more:hover{text-decoration:underline;}
+.rem-pin-btn{background:none;border:none;color:var(--dim);cursor:pointer;padding:6px;border-radius:8px;transition:all 0.1s;font-size:14px;line-height:1;}
+.rem-pin-btn:hover{color:var(--text);background:rgba(0,0,0,0.05);}
+.rem-cl-progress{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.rem-cl-progress-bar{height:100%;background:var(--green);border-radius:4px;transition:width 0.3s;}
+.rem-cl-items{display:flex;flex-direction:column;gap:4px;margin-bottom:14px;}
+.rem-cl-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);cursor:pointer;padding:8px 10px;border-radius:var(--radius-sm);transition:background 0.1s;}
+.rem-cl-item:hover{background:rgba(0,0,0,0.03);}
+.rem-cl-item.checked{color:var(--dim);text-decoration:line-through;}
+.rem-cl-box{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.rem-cl-item.checked .rem-cl-box{background:var(--green);border-color:var(--green);color:#fff;}
+.rem-cl-members{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.rem-cl-members-title{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;}
+.rem-cl-member-progress{font-weight:700;font-size:12px;}
+.rem-cl-member-progress.done{color:var(--green);}
+.rem-cl-member-progress.pending{color:var(--dim);}
+.rem-cl-input-wrap{display:flex;flex-direction:column;gap:6px;}
 .rem-cl-input-row{display:flex;gap:8px;align-items:center;}
-.rem-cl-input-row input{flex:1;background:var(--cardHover);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:12px;font-family:inherit;outline:none;box-sizing:border-box;}
+.rem-cl-input-row input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:12px;font-family:inherit;outline:none;box-sizing:border-box;}
 .rem-cl-input-row input:focus{border-color:var(--accent);}
 .rem-cl-input-row .rem-cl-remove{background:none;border:none;color:var(--dim);cursor:pointer;font-size:16px;padding:0 4px;line-height:1;}
 .rem-cl-input-row .rem-cl-remove:hover{color:var(--red);}
 .rem-cl-add-btn{background:none;border:1px dashed var(--border);border-radius:8px;color:var(--dim);padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.12s;}
-.rem-cl-add-btn:hover{border-color:var(--dim);color:var(--text);}
-@media(max-width:700px){.rem-sidebar{width:100%;}.rem-main{display:none;}.rem-layout.group-open .rem-sidebar{display:none;}.rem-layout.group-open .rem-main{display:flex;}}
+.rem-cl-add-btn:hover{border-color:var(--muted);color:var(--text);}
+.rem-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--dim);font-size:14px;font-weight:500;text-align:center;padding:60px 20px;}
+@media(max-width:700px){.rem-board{padding:14px;}}
 /* Logo */
 .logo-img{width:30px;height:30px;border-radius:50%;object-fit:cover;}
 /* Custom month picker */
@@ -590,7 +571,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
 <!-- RESTAURANT MANAGEMENT -->
 <div class="restmgr-overlay" id="restmgrOverlay" onclick="if(event.target===this)closeRestMgr()">
   <div class="restmgr-box">
-    <div class="restmgr-title">Hantera restauranger</div>
+    <div class="restmgr-title" id="restmgrTitle">Hantera restauranger</div>
     <div id="restmgrContent"></div>
     <div style="margin-top:16px;text-align:right"><button class="btn btn-outline" onclick="closeRestMgr()">St\u00e4ng</button></div>
   </div>
@@ -610,7 +591,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       <button class="sidebar-item" onclick="switchPage('forecast')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Prognos</span></button>
       <button class="sidebar-item" onclick="switchPage('shiftleader')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span>Shiftleader</span></button>
       <div class="msg-nav-wrap"><button class="sidebar-item" onclick="switchPage('messages')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span>Chatt</span><span class="msg-badge" id="msgBadge" style="display:none">0</span></button></div>
-      <button class="sidebar-item" onclick="switchPage('reminders')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span><span>Påminnelser</span></button>
+      <button class="sidebar-item" onclick="switchPage('reminders')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span><span>Anslagstavla</span></button>
       <button class="sidebar-item" onclick="switchPage('styrkort')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span><span>Styrkort</span></button>
     </div>
     <div class="sidebar-bottom">
@@ -881,7 +862,7 @@ function showDashboard(){
     else abtn.innerHTML='';
   }
   var srmBtn=document.getElementById("settingsRestMgr");
-  if(srmBtn) srmBtn.style.display=isAdmin?"block":"none";
+  if(srmBtn) srmBtn.style.display="block";
   // Start notification polling
   loadNotifications();
   if(!notifInterval) notifInterval=setInterval(loadNotifications,15000);
@@ -1447,8 +1428,8 @@ function makeChart(id,cfg){
   cfg.options.plugins=cfg.options.plugins||{};
   cfg.options.plugins.legend={labels:{color:legendCol,font:{size:12,weight:'600'},usePointStyle:false,boxWidth:20}};
   cfg.options.scales=cfg.options.scales||{x:{ticks:{color:tickCol,font:{size:11,weight:'500'},maxRotation:45,minRotation:0,autoSkip:false,maxTicksLimit:50},grid:{color:gridCol}},y:{ticks:{color:tickCol,font:{size:11,weight:'500'}},grid:{color:gridCol}}};
-  if(lightBg&&cfg.data&&cfg.data.datasets){cfg.data.datasets.forEach(function(ds){if(ds.borderWidth&&ds.borderWidth<=2)ds.borderWidth=2.5;if(ds.pointRadius!==undefined&&ds.pointRadius<=1)ds.pointRadius=2.5;if(ds.fill&&ds.backgroundColor){ds.backgroundColor=ds.backgroundColor.replace(/0\.08/,"0.18");}if(ds.borderColor==="#556677")ds.borderColor="#94a3b8";});}
-  if(!lightBg&&cfg.data&&cfg.data.datasets){cfg.data.datasets.forEach(function(ds){if(ds.borderWidth&&ds.borderWidth<=2)ds.borderWidth=2.5;if(ds.pointRadius!==undefined&&ds.pointRadius<=2)ds.pointRadius=3.5;if(ds.pointRadius===undefined&&ds.type!=="bar")ds.pointRadius=3;});}  var c=new Chart(el,cfg);charts.push(c);return c;
+  if(lightBg&&cfg.data&&cfg.data.datasets){cfg.data.datasets.forEach(function(ds){if(ds.borderWidth&&ds.borderWidth<=2)ds.borderWidth=2.5;if(ds.fill&&ds.backgroundColor){ds.backgroundColor=ds.backgroundColor.replace(/0\.08/,"0.18");}if(ds.borderColor==="#556677")ds.borderColor="#94a3b8";});}
+  if(!lightBg&&cfg.data&&cfg.data.datasets){cfg.data.datasets.forEach(function(ds){if(ds.borderWidth&&ds.borderWidth<=2)ds.borderWidth=2.5;});}  var c=new Chart(el,cfg);charts.push(c);return c;
 }
 var CC=["#C41E3A","#22C55E","#3B82F6","#F59E0B","#A855F7","#EC4899","#38bdf8"];
 
@@ -1467,7 +1448,7 @@ function render(){
   // Toggle fullpage mode for chat/reminders
   var mainEl=document.querySelector(".main");
   if(mainEl){
-    var fp=currentPage==="messages"||currentPage==="reminders";
+    var fp=currentPage==="messages";
     mainEl.classList.toggle("fullpage",fp);
   }
   // Update sidebar active state
@@ -2343,6 +2324,15 @@ function chatKey(a,b){return [a,b].sort().join('|');}
 var chatNameCache={}; // email -> displayName
 var chatPicCache={}; // email -> profilePic dataUrl
 
+function memberAvatar(email,size){
+  size=size||22;
+  var nm=chatNameCache[email]||email;
+  if(chatPicCache[email]){
+    return '<img src="'+chatPicCache[email]+'" style="width:'+size+'px;height:'+size+'px;border-radius:50%;object-fit:cover;flex-shrink:0">';
+  }
+  return '<div style="width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+avatarColor(email)+';display:flex;align-items:center;justify-content:center;font-size:'+Math.round(size*0.35)+'px;font-weight:800;color:#fff;flex-shrink:0">'+getInitials(nm)+'</div>';
+}
+
 function lookupNameByEmail(email){
   if(chatNameCache[email])return Promise.resolve(chatNameCache[email]);
   return db.collection("users").where("email","==",email).limit(1).get().then(function(snap){
@@ -2640,29 +2630,20 @@ function isRemAdmin(){return currentUser&&currentUser.email&&currentUser.email.t
 function loadReminders(){
   if(!currentUser)return Promise.resolve();
   var me=currentUser.email.toLowerCase();
-  // Load groups where user is a member or is admin
   return db.collection("reminderGroups").get().then(function(snap){
     remGroups=[];
     snap.forEach(function(doc){
       var d=doc.data();d.id=doc.id;
       var members=(d.members||[]).map(function(m){return m.toLowerCase();});
-      if(members.indexOf(me)>=0||me===REMINDER_ADMIN){
-        remGroups.push(d);
-      }
+      if(members.indexOf(me)>=0||me===REMINDER_ADMIN){remGroups.push(d);}
     });
-    // Load all reminder items for these groups
     if(remGroups.length===0){remItems=[];return;}
     var gids=remGroups.map(function(g){return g.id;});
     return db.collection("reminders").where("groupId","in",gids).limit(500).get().then(function(snap2){
       remItems=[];
       snap2.forEach(function(doc){
         var d=doc.data();d.id=doc.id;
-        // Decode completed field: keys use _ instead of . for Firestore compat
-        if(d.completed){
-          var decoded={};
-          Object.keys(d.completed).forEach(function(k){decoded[k.replace(/_/g,".")]=d.completed[k];});
-          d.completed=decoded;
-        }
+        if(d.completed){var decoded={};Object.keys(d.completed).forEach(function(k){decoded[k.replace(/_/g,".")]=d.completed[k];});d.completed=decoded;}
         remItems.push(d);
       });
       remItems.sort(function(a,b){
@@ -2674,173 +2655,235 @@ function loadReminders(){
   }).catch(function(e){console.error("Reminders load:",e);});
 }
 
+var remListener=null;
+function startRemListener(){
+  if(remListener||!currentUser||remGroups.length===0)return;
+  var gids=remGroups.map(function(g){return g.id;});
+  remListener=db.collection("reminders").where("groupId","in",gids).limit(500)
+    .onSnapshot(function(snap){
+      remItems=[];
+      snap.forEach(function(doc){
+        var d=doc.data();d.id=doc.id;
+        if(d.completed){var decoded={};Object.keys(d.completed).forEach(function(k){decoded[k.replace(/_/g,".")]=d.completed[k];});d.completed=decoded;}
+        remItems.push(d);
+      });
+      remItems.sort(function(a,b){
+        var ta=a.ts?(a.ts.seconds?a.ts.seconds*1000:(typeof a.ts==="number"?a.ts:0)):0;
+        var tb=b.ts?(b.ts.seconds?b.ts.seconds*1000:(typeof b.ts==="number"?b.ts:0)):0;
+        return tb-ta;
+      });
+      if(currentPage==="reminders")renderReminders();
+    },function(err){console.error("Rem listener err:",err);remListener=null;});
+}
+
 function renderReminders(){
   document.getElementById("kpis").innerHTML="";
   var admin=isRemAdmin();
-  var h='<div class="rem-layout'+(remOpenGroup?' group-open':'')+'">';
+  var me=currentUser.email.toLowerCase();
+  startRemListener();
 
-  // Sidebar
-  h+='<div class="rem-sidebar">';
-  h+='<div class="rem-sidebar-head"><h3>P\u00e5minnelser</h3>';
-  if(admin){
-    h+='<button class="chat-new-btn" onclick="createReminderGroup()" title="Skapa grupp"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>';
-  }
-  h+='</div><div class="rem-groups">';
-  if(remGroups.length===0){
-    h+='<div class="rem-empty" style="padding:40px 16px;font-size:12px">'+(admin?'Skapa en grupp med + knappen':'Inga p\u00e5minnelsegrupper \u00e4nnu')+'</div>';
-  }
-  remGroups.forEach(function(g){
-    var active=(remOpenGroup===g.id)?" active":"";
-    var cnt=(g.members||[]).length+" medlem"+(((g.members||[]).length!==1)?"mar":"");
-    var itemCnt=remItems.filter(function(r){return r.groupId===g.id;}).length;
-    h+='<div class="rem-group'+active+'" onclick="openRemGroup(\''+g.id+'\')">';
-    h+='<div class="rem-group-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>';
-    h+='<div class="rem-group-info"><div class="rem-group-name">'+escH(g.name)+'</div>';
-    h+='<div class="rem-group-count">'+cnt+' \u00b7 '+itemCnt+' p\u00e5minnelser</div></div></div>';
-  });
-  h+='</div></div>';
+  if(!remOpenGroup&&remGroups.length>0)remOpenGroup=remGroups[0].id;
+  var grp=remGroups.find(function(g){return g.id===remOpenGroup;});
+  var groupItems=grp?remItems.filter(function(r){return r.groupId===grp.id;}):[];
+  var pinned=groupItems.filter(function(r){return r.pinned&&r.type!=="checklist";});
+  var checklists=groupItems.filter(function(r){return r.type==="checklist";});
+  var posts=groupItems.filter(function(r){return !r.type&&!r.pinned;});
 
-  // Main
-  h+='<div class="rem-main">';
-  if(remOpenGroup){
-    var grp=remGroups.find(function(g){return g.id===remOpenGroup;});
-    if(grp){
-      h+='<div class="rem-header"><div class="rem-header-name">'+escH(grp.name)+'</div>';
-      if(admin){
-        h+='<div class="rem-header-actions">';
-        h+='<button class="btn btn-outline" style="font-size:11px;padding:6px 12px" onclick="editRemGroup(\''+grp.id+'\')">Hantera</button>';
-        h+='<button class="btn btn-outline" style="font-size:11px;padding:6px 12px;color:var(--red)" onclick="deleteRemGroup(\''+grp.id+'\')">Ta bort</button>';
-        h+='</div>';
-      }
-      h+='</div>';
-      // Members
-      h+='<div class="rem-members"><div class="rem-members-title">Medlemmar</div><div class="rem-member-list">';
-      (grp.members||[]).forEach(function(email){
-        var nm=chatNameCache[email]||email;
-        h+='<div class="rem-member-chip"><div class="mini-av" style="background:'+avatarColor(email)+'">'+getInitials(nm)+'</div>'+escH(nm);
-        if(admin)h+='<span class="rem-x" onclick="event.stopPropagation();removeRemMember(\''+grp.id+'\',\''+escH(email.replace(/'/g,"\\'"))+'\')">\u00d7</span>';
-        h+='</div>';
+  // Lookup names in background, re-render when done
+  if(grp){
+    var memberEmails=grp.members||[];
+    var needLookup=memberEmails.filter(function(e){return !chatNameCache[e];});
+    if(needLookup.length>0){
+      Promise.all(needLookup.map(function(e){return lookupNameByEmail(e);})).then(function(){
+        if(currentPage==="reminders")renderReminders();
       });
-      h+='</div>';
-      if(admin){
-        h+='<div class="rem-add-member"><input type="email" id="remAddEmail" placeholder="L\u00e4gg till e-post..." onkeydown="if(event.key===\'Enter\')addRemMember(\''+grp.id+'\')"><button class="btn btn-primary" style="font-size:11px;padding:6px 12px" onclick="addRemMember(\''+grp.id+'\')">L\u00e4gg till</button></div>';
-      }
-      h+='</div>';
-      // Feed
-      h+='<div class="rem-feed">';
-      var groupItems=remItems.filter(function(r){return r.groupId===grp.id;});
-      if(groupItems.length===0){
-        h+='<div class="rem-empty">Inga p\u00e5minnelser skickade \u00e4nnu</div>';
-      }
-      groupItems.forEach(function(r){
-        var ts=r.ts?(new Date(r.ts.seconds?r.ts.seconds*1000:r.ts)).toLocaleDateString("sv-SE",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}):"";
-        if(r.type==="checklist"){
-          var me=currentUser.email.toLowerCase();
-          var myChecks=(r.completed&&r.completed[me])?r.completed[me]:[];
-          var items=r.items||[];
-          var myDone=items.filter(function(_,i){return myChecks.indexOf(i)>=0;}).length;
-          var myTotal=items.length;
-          var myAllDone=myDone>=myTotal&&myTotal>0;
-          // Admin: see all members' progress
-          var grpMembers=(grp.members||[]).filter(function(m){return m!==r.from;});
-          var allMembersDone=grpMembers.length>0&&grpMembers.every(function(m){
-            var mc=(r.completed&&r.completed[m])?r.completed[m]:[];
-            return mc.length>=myTotal;
-          });
-          var cardCls="rem-card checklist"+(allMembersDone?" all-done":"");
-          h+='<div class="'+cardCls+'">';
-          h+='<div class="rem-card-head"><span class="rem-card-from">'+escH(r.fromName||r.from)+'</span><span class="rem-card-time">'+ts+'</span></div>';
-          if(r.title)h+='<div class="rem-cl-title">'+escH(r.title)+'</div>';
-          // Progress bar for current user
-          var pct=myTotal?Math.round(myDone/myTotal*100):0;
-          h+='<div class="rem-cl-progress"><div class="rem-cl-progress-bar" style="width:'+pct+'%"></div></div>';
-          h+='<div class="rem-cl-status">'+myDone+'/'+myTotal+' klart'+(myAllDone?' \u2714\ufe0f':'')+'</div>';
-          h+='<div class="rem-cl-items">';
-          items.forEach(function(item,idx){
-            var checked=myChecks.indexOf(idx)>=0;
-            h+='<div class="rem-cl-item'+(checked?" checked":"")+'" onclick="toggleCheckItem(\''+escH(r.id)+'\','+idx+')">';
-            h+='<div class="rem-cl-box">'+(checked?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'')+'</div>';
-            h+='<span>'+escH(item)+'</span></div>';
-          });
-          h+='</div>';
-          // Admin: member completion overview
-          if(admin&&grpMembers.length>0){
-            h+='<div class="rem-cl-members"><div class="rem-cl-status" style="margin-bottom:6px">Medlemmars status</div>';
-            grpMembers.forEach(function(m){
-              var mc=(r.completed&&r.completed[m])?r.completed[m]:[];
-              var mDone=mc.length;var mAll=mDone>=myTotal&&myTotal>0;
-              var nm=chatNameCache[m]||m;
-              h+='<div class="rem-cl-member-row"><div class="mini-av" style="background:'+avatarColor(m)+'">'+getInitials(nm)+'</div>';
-              h+='<span>'+escH(nm)+'</span>';
-              h+='<span class="'+(mAll?"rem-cl-member-done":"rem-cl-member-pending")+'" style="margin-left:auto">'+mDone+'/'+myTotal+(mAll?' \u2705':'')+'</span>';
-              h+='</div>';
-            });
-            h+='</div>';
-          }
-          h+='</div>';
-        } else {
-          h+='<div class="rem-card"><div class="rem-card-head"><span class="rem-card-from">'+escH(r.fromName||r.from)+'</span><span class="rem-card-time">'+ts+'</span></div>';
-          h+='<div class="rem-card-body">'+escH(r.body)+'</div></div>';
-        }
-      });
-      h+='</div>';
-      // Compose (admin only)
-      if(admin){
-        h+='<div class="rem-compose">';
-        h+='<div class="rem-compose-tabs">';
-        h+='<button class="rem-compose-tab'+(remComposeMode==="text"?" active":"")+'" onclick="remComposeMode=\'text\';renderReminders()">P\u00e5minnelse</button>';
-        h+='<button class="rem-compose-tab'+(remComposeMode==="checklist"?" active":"")+'" onclick="remComposeMode=\'checklist\';renderReminders()">Checklista</button>';
-        h+='</div>';
-        if(remComposeMode==="checklist"){
-          h+='<input type="text" id="remClTitle" placeholder="Rubrik, t.ex. Klart innan torsdag..." style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:8px">';
-          h+='<div class="rem-cl-input-wrap" id="remClInputs">';
-          for(var ci=0;ci<remClDraft.length;ci++){
-            h+='<div class="rem-cl-input-row"><input type="text" value="'+escH(remClDraft[ci])+'" placeholder="Punkt '+(ci+1)+'..." oninput="remClDraft['+ci+']=this.value"><button class="rem-cl-remove" onclick="remClDraft.splice('+ci+',1);renderReminders()">\u00d7</button></div>';
-          }
-          h+='</div>';
-          h+='<button class="rem-cl-add-btn" onclick="remClDraft.push(\'\');renderReminders()" style="margin-top:6px;width:100%">+ L\u00e4gg till punkt</button>';
-          h+='<div class="rem-compose-row"><button class="btn btn-primary" onclick="sendChecklist(\''+grp.id+'\')">Skicka checklista</button></div>';
-        } else {
-          h+='<textarea id="remBody" placeholder="Skriv en p\u00e5minnelse till gruppen..."></textarea>';
-          h+='<div class="rem-compose-row"><button class="btn btn-primary" onclick="sendReminder(\''+grp.id+'\')">Skicka p\u00e5minnelse</button></div>';
-        }
-        h+='</div>';
-      }
     }
-  } else {
-    h+='<div class="rem-empty">V\u00e4lj en grupp</div>';
   }
-  h+='</div></div>';
+
+  function getDisplayName(r){
+    var email=(r.from||"").toLowerCase();
+    if(chatNameCache[email]&&chatNameCache[email]!==email)return chatNameCache[email];
+    if(r.fromName&&r.fromName.indexOf("@")<0)return r.fromName;
+    return chatNameCache[email]||r.fromName||r.from||"";
+  }
+
+  function timeAgo(ts){
+    if(!ts)return"";
+    var ms=ts.seconds?ts.seconds*1000:(typeof ts==="number"?ts:0);
+    var diff=Date.now()-ms;
+    var min=Math.floor(diff/60000);
+    if(min<1)return"just nu";
+    if(min<60)return min+" min sedan";
+    var hrs=Math.floor(min/60);
+    if(hrs<24)return hrs+" tim sedan";
+    var days=Math.floor(hrs/24);
+    if(days<7)return days+" dag"+(days>1?"ar":"")+" sedan";
+    return new Date(ms).toLocaleDateString("sv-SE",{day:"numeric",month:"short"});
+  }
+
+  function postCard(r,isPinned){
+    var fromName=escH(getDisplayName(r));
+    var fromEmail=(r.from||"").toLowerCase();
+    var body=r.body||"";
+    var isLong=body.length>300;
+    var displayBody=isLong?escH(body.substring(0,300))+"...":escH(body);
+    var h2="";
+    h2+='<div class="rem-post">';
+    if(isPinned)h2+='<div class="rem-post-pin">Prioriterat inl\u00e4gg</div>';
+    h2+='<div class="rem-post-header">';
+    h2+=memberAvatar(fromEmail,40);
+    h2+='<div class="rem-post-meta"><div class="rem-post-name">'+fromName+'</div>';
+    h2+='<div class="rem-post-time">'+timeAgo(r.ts)+'</div></div>';
+    if(admin)h2+='<div class="rem-post-actions"><button class="rem-pin-btn" onclick="'+(isPinned?'unpinReminder':'pinReminder')+'(\''+r.id+'\')" title="'+(isPinned?'Avpinna':'Pinna')+'">'+(isPinned?'\u2716':'\u25CB')+'</button><button class="rem-pin-btn" onclick="deleteReminder(\''+r.id+'\')" title="Ta bort">\u00d7</button></div>';
+    h2+='</div>';
+    if(r.title)h2+='<div class="rem-post-title">'+escH(r.title)+'</div>';
+    h2+='<div class="rem-post-body">'+displayBody.replace(/\n/g,"<br>")+'</div>';
+    if(isLong)h2+='<button class="rem-read-more" onclick="this.previousElementSibling.textContent=decodeURIComponent(\''+encodeURIComponent(body)+'\');this.remove()">L\u00e4s mer</button>';
+    h2+='</div>';
+    return h2;
+  }
+
+  function clCard(r){
+    var items=r.items||[];
+    var grpMembers=(grp.members||[]).filter(function(m){return m!==r.from;});
+    var allDone=grpMembers.length>0&&grpMembers.every(function(m){var mc=(r.completed&&r.completed[m])?r.completed[m]:[];return mc.length>=items.length;});
+    var myChecks=(r.completed&&r.completed[me])?r.completed[me]:[];
+    var myDone=items.filter(function(_,i){return myChecks.indexOf(i)>=0;}).length;
+    var pct=items.length?Math.round(myDone/items.length*100):0;
+    var isCreator=(me===(r.from||"").toLowerCase());
+    var fromName=escH(getDisplayName(r));
+    var fromEmail=(r.from||"").toLowerCase();
+
+    var h2='<div class="rem-post'+(allDone?" rem-post-done":"")+'">';
+    h2+='<div class="rem-post-header">';
+    h2+=memberAvatar(fromEmail,40);
+    h2+='<div class="rem-post-meta"><div class="rem-post-name">'+fromName+'</div>';
+    h2+='<div class="rem-post-time">Checklista \u00b7 '+timeAgo(r.ts)+'</div></div>';
+    if(admin)h2+='<div class="rem-post-actions"><button class="rem-pin-btn" onclick="deleteReminder(\''+r.id+'\')" title="Ta bort">\u00d7</button></div>';
+    h2+='</div>';
+    if(r.title)h2+='<div class="rem-post-title">'+escH(r.title)+'</div>';
+
+    if(!isCreator){
+      h2+='<div class="rem-cl-progress" style="margin:10px 0 4px"><div class="rem-cl-progress-bar" style="width:'+pct+'%"></div></div>';
+      h2+='<div style="font-size:11px;color:var(--dim);margin-bottom:12px">'+myDone+'/'+items.length+' avklarade</div>';
+      h2+='<div class="rem-cl-items">';
+      items.forEach(function(item,idx){
+        var checked=myChecks.indexOf(idx)>=0;
+        h2+='<div class="rem-cl-item'+(checked?" checked":"")+'" onclick="toggleCheckItem(\''+escH(r.id)+'\','+idx+')">';
+        h2+='<div class="rem-cl-box">'+(checked?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'')+'</div>';
+        h2+='<span>'+escH(item)+'</span></div>';
+      });
+      h2+='</div>';
+    } else {
+      var tc=0,tp=grpMembers.length*items.length;
+      grpMembers.forEach(function(m){var mc=(r.completed&&r.completed[m])?r.completed[m]:[];tc+=mc.length;});
+      var op=tp?Math.round(tc/tp*100):0;
+      h2+='<div class="rem-cl-progress" style="margin:10px 0 4px"><div class="rem-cl-progress-bar" style="width:'+op+'%"></div></div>';
+      h2+='<div style="font-size:11px;color:var(--dim);margin-bottom:12px">Totalt: '+tc+'/'+tp+' ('+op+'%)</div>';
+    }
+
+    if(grpMembers.length>0){
+      h2+='<div class="rem-cl-members"><div class="rem-cl-members-title">Medlemmarnas status</div>';
+      grpMembers.forEach(function(m){
+        var mc=(r.completed&&r.completed[m])?r.completed[m]:[];
+        var mDone=mc.length;var mAll=mDone>=items.length&&items.length>0;
+        var nm=chatNameCache[m]||m;
+        var sn=escH(nm.indexOf("@")>=0?nm.split("@")[0]:nm);
+        h2+='<div style="margin-bottom:10px;background:'+(mAll?'rgba(22,163,74,0.04)':'var(--card)')+';border:1px solid '+(mAll?'var(--green)':'var(--border)')+';border-radius:var(--radius-sm);padding:10px 12px">';
+        h2+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+        h2+=memberAvatar(m,22);
+        h2+='<span style="font-size:12px;font-weight:600;color:var(--text)">'+sn+'</span>';
+        h2+='<span class="rem-cl-member-progress '+(mAll?"done":"pending")+'" style="margin-left:auto">'+mDone+'/'+items.length+'</span></div>';
+        h2+='<div style="display:flex;flex-direction:column;gap:2px;padding-left:30px">';
+        items.forEach(function(item,idx){
+          var done=mc.indexOf(idx)>=0;
+          h2+='<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:'+(done?'var(--green)':'var(--red)')+'">';
+          h2+=(done?'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>');
+          h2+='<span style="color:'+(done?'var(--muted)':'var(--text)')+';'+(done?'':'font-weight:600')+'">'+escH(item)+'</span></div>';
+        });
+        h2+='</div></div>';
+      });
+      h2+='</div>';
+    }
+    h2+='</div>';
+    return h2;
+  }
+
+  var h='<div class="rem-board">';
+
+  // Compose area at top (like social feed)
+  if(admin&&grp){
+    h+='<div class="rem-compose-box">';
+    h+='<div class="rem-compose-header">';
+    h+=memberAvatar(me,36);
+    h+='<div class="rem-compose-tabs" style="flex:1">';
+    h+='<button class="rem-compose-tab'+(remComposeMode==="text"?" active":"")+'" onclick="remComposeMode=\'text\';renderReminders()">Inl\u00e4gg</button>';
+    h+='<button class="rem-compose-tab'+(remComposeMode==="checklist"?" active":"")+'" onclick="remComposeMode=\'checklist\';renderReminders()">Checklista</button>';
+    h+='</div></div>';
+    if(remComposeMode==="checklist"){
+      h+='<input type="text" id="remClTitle" placeholder="Rubrik f\u00f6r checklistan..." style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;margin-bottom:8px">';
+      h+='<div class="rem-cl-input-wrap" id="remClInputs">';
+      for(var ci=0;ci<remClDraft.length;ci++){
+        h+='<div class="rem-cl-input-row"><input type="text" value="'+escH(remClDraft[ci])+'" placeholder="Punkt '+(ci+1)+'..." oninput="remClDraft['+ci+']=this.value"><button class="rem-cl-remove" onclick="remClDraft.splice('+ci+',1);renderReminders()">\u00d7</button></div>';
+      }
+      h+='</div>';
+      h+='<button class="rem-cl-add-btn" onclick="remClDraft.push(\'\');renderReminders()" style="margin-top:6px;width:100%">+ L\u00e4gg till punkt</button>';
+      h+='<div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary" onclick="sendChecklist(remOpenGroup)">Publicera</button></div>';
+    } else {
+      h+='<textarea id="remBody" placeholder="Skriv n\u00e5got till ditt team..." style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:70px;line-height:1.5;box-sizing:border-box;position:relative;z-index:2"></textarea>';
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-top:10px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;padding:6px 0"><input type="checkbox" id="remPinCheck" style="accent-color:var(--accent);width:16px;height:16px;cursor:pointer"> Prioritera</label>';
+      h+='<div style="margin-left:auto"><button class="btn btn-primary" onclick="sendReminder(remOpenGroup)">Publicera</button></div></div>';
+    }
+    h+='</div>';
+  }
+
+  // Filter tabs
+  if(grp){
+    h+='<div class="rem-filters">';
+    if(remGroups.length>1){
+      remGroups.forEach(function(g){
+        var ac=g.id===remOpenGroup?" active":"";
+        h+='<button class="rem-filter-btn'+ac+'" onclick="remOpenGroup=\''+g.id+'\';remListener=null;startRemListener();renderReminders()">'+escH(g.name)+'</button>';
+      });
+      h+='<div style="flex:1"></div>';
+    }
+    if(admin){
+      h+='<button class="rem-filter-btn" style="margin-left:auto;color:var(--dim)" onclick="editRemGroup(remOpenGroup)">\u2699 Hantera grupp</button>';
+    }
+    h+='</div>';
+  }
+
+  if(!grp){
+    h+='<div class="rem-empty">'+(admin?'<button class="btn btn-primary" onclick="createReminderGroup()">Skapa din f\u00f6rsta grupp</button>':'Inga anslagstavlor \u00e4nnu')+'</div>';
+    h+='</div>';
+    document.getElementById("content").innerHTML=h;return;
+  }
+
+  // Feed: pinned first, then checklists, then posts
+  if(pinned.length===0&&checklists.length===0&&posts.length===0&&!admin){
+    h+='<div class="rem-empty">Inget publicerat \u00e4nnu</div>';
+  }
+  pinned.forEach(function(r){h+=postCard(r,true);});
+  checklists.forEach(function(r){h+=clCard(r);});
+  posts.forEach(function(r){h+=postCard(r,false);});
+
+  h+='</div>';
   document.getElementById("content").innerHTML=h;
 }
 
-function openRemGroup(id){
-  remOpenGroup=id;
-  // Look up names for members
-  var grp=remGroups.find(function(g){return g.id===id;});
-  if(grp){
-    var lookups=(grp.members||[]).map(function(email){return lookupNameByEmail(email);});
-    Promise.all(lookups).then(function(){renderReminders();});
-  } else {
-    renderReminders();
-  }
-}
+function openRemGroup(id){remOpenGroup=id;renderReminders();}
 
 function createReminderGroup(){
-  showCustomModal("Namn på gruppen","",true).then(function(name){
+  showCustomModal("Namn p\u00e5 gruppen","",true).then(function(name){
     if(!name)return;
-    db.collection("reminderGroups").add({
-      name:name,
-      members:[currentUser.email.toLowerCase()],
-      createdBy:currentUser.email.toLowerCase()
-    }).then(function(){
+    db.collection("reminderGroups").add({name:name,members:[currentUser.email.toLowerCase()],createdBy:currentUser.email.toLowerCase()}).then(function(){
       loadReminders().then(function(){renderReminders();});
     });
   });
 }
 
 function deleteRemGroup(id){
-  showCustomModal("Ta bort gruppen? Alla påminnelser försvinner.","",true).then(function(val){
+  showCustomModal("Ta bort gruppen? Alla inl\u00e4gg f\u00f6rsvinner.","",true).then(function(val){
     if(!val)return;
     db.collection("reminderGroups").doc(id).delete().then(function(){
       remOpenGroup=null;
@@ -2852,12 +2895,9 @@ function deleteRemGroup(id){
 function editRemGroup(id){
   var grp=remGroups.find(function(g){return g.id===id;});
   if(!grp)return;
-  showCustomModal("Byt namn på gruppen",grp.name,true).then(function(name){
+  showCustomModal("Byt namn p\u00e5 gruppen",grp.name,true).then(function(name){
     if(!name)return;
-    db.collection("reminderGroups").doc(id).update({name:name}).then(function(){
-      grp.name=name;
-      renderReminders();
-    });
+    db.collection("reminderGroups").doc(id).update({name:name}).then(function(){grp.name=name;renderReminders();});
   });
 }
 
@@ -2865,68 +2905,54 @@ function addRemMember(groupId){
   var el=document.getElementById("remAddEmail");
   var email=(el?el.value:"").trim().toLowerCase();
   if(!email||!email.includes("@")){showCustomModal("Ange en giltig e-postadress","",false);return;}
-  var grp=remGroups.find(function(g){return g.id===groupId;});
-  if(!grp)return;
+  var grp=remGroups.find(function(g){return g.id===groupId;});if(!grp)return;
   var members=grp.members||[];
   if(members.indexOf(email)>=0){showCustomModal("Redan medlem","",false);return;}
   members.push(email);
-  db.collection("reminderGroups").doc(groupId).update({members:members}).then(function(){
-    grp.members=members;
-    lookupNameByEmail(email).then(function(){renderReminders();});
-  });
+  db.collection("reminderGroups").doc(groupId).update({members:members}).then(function(){grp.members=members;lookupNameByEmail(email).then(function(){renderReminders();});});
 }
 
 function removeRemMember(groupId,email){
-  var grp=remGroups.find(function(g){return g.id===groupId;});
-  if(!grp)return;
+  var grp=remGroups.find(function(g){return g.id===groupId;});if(!grp)return;
   grp.members=(grp.members||[]).filter(function(m){return m!==email;});
-  db.collection("reminderGroups").doc(groupId).update({members:grp.members}).then(function(){
-    renderReminders();
-  });
+  db.collection("reminderGroups").doc(groupId).update({members:grp.members}).then(function(){renderReminders();});
 }
 
 function sendReminder(groupId){
   var el=document.getElementById("remBody");
   var body=(el?el.value:"").trim();
-  if(!body){showCustomModal("Skriv en påminnelse","",false);return;}
+  if(!body){alert("Skriv ett meddelande");return;}
+  var pinEl=document.getElementById("remPinCheck");
+  var pinned=pinEl?pinEl.checked:false;
   el.value="";
-  var item={
-    groupId:groupId,
-    from:currentUser.email,
-    fromName:cachedDisplayName||currentUser.email,
-    body:body,
-    ts:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  // Optimistic
-  remItems.unshift({groupId:groupId,from:currentUser.email,fromName:cachedDisplayName||currentUser.email,body:body,ts:{seconds:Math.floor(Date.now()/1000)},id:"_p_"+Date.now()});
-  renderReminders();
-  db.collection("reminders").add(item).then(function(){
-    loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
-  }).catch(function(err){showCustomModal("Kunde inte skicka: "+err.message,"",false);});
+  db.collection("reminders").add({
+    groupId:groupId,from:currentUser.email,fromName:cachedDisplayName||currentUser.email,
+    body:body,pinned:pinned,ts:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    console.log("Reminder sent OK");
+    if(!remListener)loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){
+    console.error("Send reminder error:",err);
+    alert("Kunde inte publicera: "+err.message+"\n\nKontrollera Firestore-reglerna.");
+  });
 }
 
 function sendChecklist(groupId){
   var titleEl=document.getElementById("remClTitle");
   var title=(titleEl?titleEl.value:"").trim();
   var items=remClDraft.filter(function(s){return s.trim();});
-  if(items.length===0){showCustomModal("L\u00e4gg till minst en punkt","",false);return;}
-  var clItem={
-    groupId:groupId,
-    from:currentUser.email,
-    fromName:cachedDisplayName||currentUser.email,
-    type:"checklist",
-    title:title,
-    items:items,
-    completed:{},
-    ts:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  // Optimistic
-  remItems.unshift({groupId:groupId,from:currentUser.email,fromName:cachedDisplayName||currentUser.email,type:"checklist",title:title,items:items,completed:{},ts:{seconds:Math.floor(Date.now()/1000)},id:"_p_"+Date.now()});
+  if(items.length===0){alert("Lägg till minst en punkt");return;}
   remClDraft=["","",""];
-  renderReminders();
-  db.collection("reminders").add(clItem).then(function(){
-    loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
-  }).catch(function(err){showCustomModal("Kunde inte skicka: "+err.message,"",false);});
+  db.collection("reminders").add({
+    groupId:groupId,from:currentUser.email,fromName:cachedDisplayName||currentUser.email,
+    type:"checklist",title:title,items:items,completed:{},ts:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function(){
+    console.log("Checklist sent OK");
+    if(!remListener)loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){
+    console.error("Send checklist error:",err);
+    alert("Kunde inte publicera: "+err.message+"\n\nKontrollera Firestore-reglerna.");
+  });
 }
 
 function toggleCheckItem(remId,idx){
@@ -2935,23 +2961,34 @@ function toggleCheckItem(remId,idx){
   var me=currentUser.email.toLowerCase();
   if(!r.completed)r.completed={};
   if(!r.completed[me])r.completed[me]=[];
-  var arr=r.completed[me];
+  var arr=r.completed[me].slice();
   var pos=arr.indexOf(idx);
   if(pos>=0)arr.splice(pos,1); else arr.push(idx);
   r.completed[me]=arr;
   renderReminders();
-  // Save to Firestore
-  if(remId.indexOf("_p_")===0)return; // skip optimistic
   var update={};
   update["completed."+me.replace(/\./g,"_")]=arr;
-  db.collection("reminders").doc(remId).update(update).then(function(){
-    // Check if all items done — notify admin
-    var items=r.items||[];
-    if(arr.length>=items.length&&items.length>0){
-      // Reload to get fresh state
-      loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
-    }
-  }).catch(function(err){console.error("Check save error:",err);});
+  db.collection("reminders").doc(remId).update(update).catch(function(err){
+    console.error("Check save error:",err);
+    alert("Kunde inte spara: "+err.message);
+  });
+}
+
+function pinReminder(id){
+  db.collection("reminders").doc(id).update({pinned:true}).then(function(){
+    if(!remListener)loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){console.error(err);alert("Kunde inte pinna: "+err.message);});
+}
+function unpinReminder(id){
+  db.collection("reminders").doc(id).update({pinned:false}).then(function(){
+    if(!remListener)loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){console.error(err);alert("Kunde inte avpinna: "+err.message);});
+}
+function deleteReminder(id){
+  if(!confirm("Ta bort detta inlägg?"))return;
+  db.collection("reminders").doc(id).delete().then(function(){
+    if(!remListener)loadReminders().then(function(){if(currentPage==="reminders")renderReminders();});
+  }).catch(function(err){console.error(err);alert("Kunde inte ta bort: "+err.message);});
 }
 
 // ========== RESTAURANT COLORS ==========
@@ -2982,8 +3019,9 @@ function setRestColor(restName,color){
 
 // ========== RESTAURANT MANAGEMENT OVERLAY ==========
 function openRestMgr(){
-  if(!isAdmin) return;
   document.getElementById("restmgrOverlay").classList.add("open");
+  var titleEl=document.getElementById("restmgrTitle");
+  if(titleEl)titleEl.textContent=isAdmin?"Hantera restauranger":"Hantera shiftleaders";
   renderRestMgr();
 }
 function closeRestMgr(){
@@ -2993,40 +3031,47 @@ function closeRestMgr(){
 function renderRestMgr(){
   var wrap=document.getElementById("restmgrContent");
   if(!wrap) return;
-  if(!state.restaurants.length){wrap.innerHTML='<div style="color:var(--dim);font-size:13px">Inga restauranger ännu.</div>';return;}
+  if(!state.restaurants.length){wrap.innerHTML='<div style="color:var(--dim);font-size:13px">Inga restauranger \u00e4nnu.</div>';return;}
+  var me=currentUser.email.toLowerCase();
   var promises=state.restaurants.map(function(r){
     return db.collection("restaurantRegistry").doc(r).get().then(function(doc){
       return {name:r,members:(doc.exists&&doc.data().members)||[],color:(doc.exists&&doc.data().color)||"",shiftLeaders:(doc.exists&&doc.data().shiftLeaders)||[]};
     });
   });
   Promise.all(promises).then(function(rests){
+    // Non-admins only see restaurants they are a member of
+    var visibleRests=isAdmin?rests:rests.filter(function(r){return r.members.map(function(m){return m.toLowerCase();}).indexOf(me)>=0;});
+    if(visibleRests.length===0){wrap.innerHTML='<div style="color:var(--dim);font-size:13px">Du har ingen restaurang att hantera.</div>';return;}
     var h="";
-    rests.forEach(function(r){
+    if(!isAdmin)h+='<div style="font-size:12px;color:var(--muted);margin-bottom:16px">H\u00e4r kan du l\u00e4gga till och ta bort shiftleaders f\u00f6r dina restauranger.</div>';
+    visibleRests.forEach(function(r){
       var curColor=r.color||getRestColor(r.name);
       h+='<div class="restmgr-rest">';
       h+='<div class="restmgr-rest-header">';
       h+='<div class="restmgr-color-dot" style="background:'+curColor+'"></div>';
       h+='<div class="restmgr-rest-name">'+escH(r.name)+'</div>';
       h+='</div>';
-      // Color picker
-      h+='<div class="restmgr-color-row">';
-      REST_COLORS.forEach(function(c){
-        var sel=(c===curColor)?" sel":"";
-        h+='<div class="restmgr-color-opt'+sel+'" style="background:'+c+'" onclick="setRestColor(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+c+'\');setTimeout(renderRestMgr,300)"></div>';
-      });
-      h+='</div>';
-      // Members
-      h+='<div class="restmgr-members">';
-      h+='<div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Medlemmar</div>';
-      if(r.members.length===0) h+='<div style="color:var(--dim);font-size:11px;margin-bottom:6px">Inga medlemmar</div>';
-      r.members.forEach(function(em){
-        h+='<div class="restmgr-member"><span>'+escH(em)+'</span><button class="btn btn-danger" style="font-size:10px;padding:2px 7px" onclick="removeMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+escH(em.replace(/'/g,"\\'"))+'\')">&times;</button></div>';
-      });
-      h+='<div class="restmgr-add-row"><input id="rmgr_add_'+escH(r.name)+'" placeholder="Lägg till email..." onkeydown="if(event.key===\'Enter\')addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')"><button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')">+</button></div>';
-      h+='</div>';
-      // Shift Leaders
+      // Color picker — admin only
+      if(isAdmin){
+        h+='<div class="restmgr-color-row">';
+        REST_COLORS.forEach(function(c){
+          var sel=(c===curColor)?" sel":"";
+          h+='<div class="restmgr-color-opt'+sel+'" style="background:'+c+'" onclick="setRestColor(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+c+'\');setTimeout(renderRestMgr,300)"></div>';
+        });
+        h+='</div>';
+        // Members — admin only
+        h+='<div class="restmgr-members">';
+        h+='<div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Medlemmar</div>';
+        if(r.members.length===0) h+='<div style="color:var(--dim);font-size:11px;margin-bottom:6px">Inga medlemmar</div>';
+        r.members.forEach(function(em){
+          h+='<div class="restmgr-member"><span>'+escH(em)+'</span><button class="btn btn-danger" style="font-size:10px;padding:2px 7px" onclick="removeMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+escH(em.replace(/'/g,"\\'"))+'\')">&times;</button></div>';
+        });
+        h+='<div class="restmgr-add-row"><input id="rmgr_add_'+escH(r.name)+'" placeholder="L\u00e4gg till email..." onkeydown="if(event.key===\'Enter\')addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')"><button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="addMemberMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')">+</button></div>';
+        h+='</div>';
+      }
+      // Shift Leaders — everyone can manage
       var sls=r.shiftLeaders||[];
-      h+='<div class="restmgr-members" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">';
+      h+='<div class="restmgr-members" style="'+(isAdmin?'margin-top:8px;padding-top:8px;border-top:1px solid var(--border)':'')+'">';
       h+='<div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Shiftleaders</div>';
       if(sls.length===0) h+='<div style="color:var(--dim);font-size:11px;margin-bottom:6px">Inga shiftleaders</div>';
       sls.forEach(function(sl){
