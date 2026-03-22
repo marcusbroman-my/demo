@@ -172,6 +172,7 @@ td input[type="text"]::placeholder{color:var(--dim);font-weight:400;}
 .notif-icon.chat{background:rgba(59,130,246,0.12);color:#3B82F6;}
 .notif-icon.reminder{background:rgba(245,158,11,0.12);color:#F59E0B;}
 .notif-icon.result{background:rgba(34,197,94,0.12);color:#22C55E;}
+.notif-icon.sync{background:rgba(13,148,136,0.12);color:#0d9488;}
 .notif-body{flex:1;min-width:0;}
 .notif-title{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .notif-desc{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -589,6 +590,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
       <button class="sidebar-item active" onclick="switchPage('overview')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span><span>Översikt</span></button>
       <button class="sidebar-item" onclick="switchPage('results')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></span><span>Resultat</span></button>
       <button class="sidebar-item" onclick="switchPage('forecast')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span>Prognos</span></button>
+      <button class="sidebar-item" onclick="switchPage('insights')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><span>Insikter</span></button>
       <button class="sidebar-item" onclick="switchPage('shiftleader')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span>Shiftleader</span></button>
       <div class="msg-nav-wrap"><button class="sidebar-item" onclick="switchPage('messages')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span>Chatt</span><span class="msg-badge" id="msgBadge" style="display:none">0</span></button></div>
       <button class="sidebar-item" onclick="switchPage('reminders')"><span class="si-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span><span>Anslagstavla</span></button>
@@ -603,6 +605,7 @@ img.chat-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;flex-s
           <div class="settings-theme-row"><span>Tema</span><div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Byt tema"><div class="tt-track"><span>☾</span><span>☀</span></div><div class="tt-knob dark" id="ttKnob">☾</div></div></div>
           <button class="settings-item" onclick="openProfile();closeSettings()">Redigera profil</button>
           <button class="settings-item" id="settingsRestMgr" style="display:none" onclick="openRestMgr();closeSettings()">Hantera restauranger</button>
+          <button class="settings-item" id="settingsSyncSheets" style="display:none" onclick="syncAllSheets();closeSettings()">Synka fr&aring;n Google Sheets</button>
           <button class="settings-item danger" onclick="doLogout();closeSettings()">Logga ut</button>
         </div>
       </div>
@@ -863,9 +866,47 @@ function showDashboard(){
   }
   var srmBtn=document.getElementById("settingsRestMgr");
   if(srmBtn) srmBtn.style.display="block";
+  var syncBtn=document.getElementById("settingsSyncSheets");
+  if(syncBtn) syncBtn.style.display=isAdmin?"block":"none";
   // Start notification polling
   loadNotifications();
   if(!notifInterval) notifInterval=setInterval(loadNotifications,15000);
+  // Auto-sync from Google Sheets on login + every 30 min
+  autoSyncSheets();
+  if(!_autoSyncInterval) _autoSyncInterval=setInterval(autoSyncSheets,30*60*1000);
+}
+
+var _autoSyncInterval=null;
+var lastSyncTime=null;
+
+function addSyncNotification(title,desc){
+  lastSyncTime=new Date();
+  // Remove old sync notifications (keep only latest)
+  notifications=notifications.filter(function(n){return n.type!=="sync";});
+  notifications.unshift({type:"sync",title:title,desc:desc,ts:{seconds:Math.floor(Date.now()/1000)},seen:false,id:"sync_"+Date.now()});
+  updateNotifDot();
+  renderNotifList();
+}
+
+function autoSyncSheets(){
+  if(!currentUser||!state.restaurants||state.restaurants.length===0)return;
+  var total=0,done=0,totalDays=0,errors=0;
+  state.restaurants.forEach(function(r){
+    db.collection("restaurantRegistry").doc(r).get().then(function(doc){
+      var url=(doc.exists&&doc.data().sheetUrl)||"";
+      if(!url)return;
+      total++;
+      fetchSheetCSV(url).then(function(csv){
+        var count=importCSVForRest(r,csv);
+        totalDays+=count;done++;
+        if(count>0)saveState();
+        console.log("Auto-synced "+count+" days for "+r);
+        if(done>=total)addSyncNotification("Auto-synk klar",totalDays+" dagar fr\u00e5n "+done+" sheet"+(errors?" ("+errors+" fel)":""));
+      }).catch(function(err){done++;errors++;console.log("Auto-sync skip "+r+":",err.message);
+        if(done>=total&&totalDays>0)addSyncNotification("Auto-synk klar",totalDays+" dagar synkade ("+errors+" fel)");
+      });
+    }).catch(function(){});
+  });
 }
 
 // ========== PROFILE ==========
@@ -1113,7 +1154,9 @@ function getWeekNumber(y,m,d){
   return 1+Math.round(((date-week1)/86400000-3+(week1.getDay()+6)%7)/7);
 }
 function ensureMonth(ym){if(!state.months[ym])state.months[ym]={};state.restaurants.forEach(function(r){if(!state.months[ym][r])state.months[ym][r]={};});}
-function getVal(ym,rest,day,key){try{return state.months[ym][rest][day][key]||0;}catch(e){return 0;}}
+function getVal(ym,rest,day,key){try{var v=state.months[ym][rest][day][key];return(v!==undefined&&v!==null&&v!=="")?v:0;}catch(e){return 0;}}
+function displayVal(v){return(v!==null&&v!==undefined&&v!==""&&v!==0)?v:"";}
+function displayValZ(v){return(v!==null&&v!==undefined&&v!=="")?v:"";}
 function setVal(ym,rest,day,key,val){
   if(!state.months[ym])state.months[ym]={};
   if(!state.months[ym][rest])state.months[ym][rest]={};
@@ -1123,13 +1166,6 @@ function setVal(ym,rest,day,key,val){
 
 
 function ensureMonth(ym){if(!state.months[ym])state.months[ym]={};state.restaurants.forEach(function(r){if(!state.months[ym][r])state.months[ym][r]={};});}
-function getVal(ym,rest,day,key){try{return state.months[ym][rest][day][key]||0;}catch(e){return 0;}}
-function setVal(ym,rest,day,key,val){
-  if(!state.months[ym])state.months[ym]={};
-  if(!state.months[ym][rest])state.months[ym][rest]={};
-  if(!state.months[ym][rest][day])state.months[ym][rest][day]={};
-  state.months[ym][rest][day][key]=val;
-}
 
 // ========== MODAL ==========
 var modalResolve=null;
@@ -1498,6 +1534,7 @@ function render(){
   if(currentPage==="reminders"){renderReminders();return;}
   if(currentPage==="shiftleader"){renderShiftleader();return;}
   if(currentPage==="styrkort"){renderStyrkort();return;}
+  if(currentPage==="insights"){renderInsightsPage();return;}
   if(currentPage==="forecast")renderForecast(nd);
   else if(currentPage==="results")renderResults(nd);
   else if(currentPage==="overview")renderOverview(nd);
@@ -1520,14 +1557,14 @@ function renderForecast(nd){
     html+='</div>';
   }
 
-  html+='<div class="actions"><button class="btn btn-primary" onclick="savePage()">Spara</button><span class="save-msg" id="saveMsg">\u2713 Sparat</span>'+(isAdmin?'<div class="actions-right"><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div>':'')+'</div>';
+  html+='<div class="actions"><span class="save-msg" id="saveMsg">\u2713 Sparas automatiskt</span>'+(isAdmin?'<div class="actions-right"><button class="btn btn-danger" style="font-size:11px;padding:5px 12px" onclick="removeRestaurant(\''+rest.replace(/'/g,"\\'")+'\')">Ta bort</button></div>':'')+'</div>';
 
   // Google actual rating - single value per restaurant per month
   var curGoogleActual=0;
   try{curGoogleActual=state.months[currentMonth][rest][0]&&state.months[currentMonth][rest][0].googleActual?state.months[currentMonth][rest][0].googleActual:0;}catch(e){}
   html+='<div class="card" style="margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">';
   html+='<div style="font-size:13px;font-weight:700;color:var(--text)">Aktuellt Google-betyg</div>';
-  html+='<input type="number" id="fc_google_actual" value="'+(curGoogleActual||'')+'" placeholder="T.ex. 4.3" step="0.1" min="1" max="5" style="width:100px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:14px;font-family:inherit;font-weight:700;outline:none">';
+  html+='<input type="number" id="fc_google_actual" value="'+(curGoogleActual||'')+'" placeholder="T.ex. 4.3" step="0.1" min="1" max="5" oninput="debounceSaveFc()" style="width:100px;background:var(--cardHover);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:14px;font-family:inherit;font-weight:700;outline:none">';
   html+='<div style="font-size:11px;color:var(--dim)">Mata in restaurangens nuvarande Google-betyg h\u00e4r</div>';
   html+='</div>';
   html+='<div class="card" style="overflow-x:auto"><h3>'+rest+' &mdash; Prognos</h3>';
@@ -1536,8 +1573,8 @@ function renderForecast(nd){
     var dn=dayName(currentMonth,d);var we=isWeekend(currentMonth,d);
     var weCls=we?' weekend':'';
     html+='<tr><td class="day-label'+weCls+'">'+d+' '+dn+'</td>';
-    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_s_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcSales")||"")+'" placeholder="0" oninput="updateFcLc()"></td>';
-    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_l_'+ri+'_'+d+'" value="'+(getVal(currentMonth,rest,d,"fcLabor")||"")+'" placeholder="0" oninput="updateFcLc()"></td>';
+    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_s_'+ri+'_'+d+'" value="'+displayValZ(getVal(currentMonth,rest,d,"fcSales"))+'" placeholder="0" oninput="updateFcLc();debounceSaveFc()"></td>';
+    html+='<td class="'+weCls.trim()+'"><input type="number" id="fc_l_'+ri+'_'+d+'" value="'+displayValZ(getVal(currentMonth,rest,d,"fcLabor"))+'" placeholder="0" oninput="updateFcLc();debounceSaveFc()"></td>';
     html+='<td class="fc-lc" id="fc_lc_'+ri+'_'+d+'">—</td>';
     html+='</tr>';
   }
@@ -1584,6 +1621,12 @@ function updateFcLc(){
     +'<div class="fc-summary-item"><span class="fc-label">LC %</span><span class="fc-value '+lcCls+'">'+fmtLc+'</span></div>';
 }
 
+var _fcSaveTimer=null;
+function debounceSaveFc(){
+  clearTimeout(_fcSaveTimer);
+  _fcSaveTimer=setTimeout(function(){savePage();},800);
+}
+
 // ========== PAGE: RESULTAT ==========
 var RESULT_FIELDS=["sales","laborCost","hours","waste","tt","google","googleCount","optiqo","absence","slDay","slEve"];
 
@@ -1626,6 +1669,7 @@ function saveDayCard(){
   setVal(currentMonth,rest,d,"absence",parseFloat(f("rd_absence"))||0);
   setVal(currentMonth,rest,d,"slDay",f("rd_slday").trim());
   setVal(currentMonth,rest,d,"slEve",f("rd_sleve").trim());
+  setVal(currentMonth,rest,d,"comment",f("rd_comment").trim());
   saveState();
   var msg=document.getElementById("saveMsg");if(msg){msg.classList.add("show");setTimeout(function(){msg.classList.remove("show");},2000);}
 }
@@ -1687,7 +1731,7 @@ function renderResults(nd){
     // Helper: build input — uses oninput for auto-save debounce and onpaste for cleaning
     function rInput(id,label,val,type,extra){
       var t=type||"number";
-      var v=val||"";
+      var v=displayValZ(val);
       var ex=extra||"";
       return'<div class="form-group"><label>'+label+'</label><input type="'+t+'" id="'+id+'" value="'+v+'" placeholder="0" oninput="debounceSaveDay()" onpaste="cleanPaste(event)" '+ex+'></div>';
     }
@@ -1730,6 +1774,12 @@ function renderResults(nd){
     html+=slSelect("rd_sleve","Shiftleader kv\u00e4ll",slEveVal);
     if(slOpts.length===0) html+='<div style="grid-column:1/-1;font-size:11px;color:var(--dim)">L\u00e4gg till shiftleaders under Inst\u00e4llningar \u2192 Hantera restauranger</div>';
     html+='</div></div>';
+
+    // Day comment
+    var commentVal=getVal(currentMonth,rest,d,"comment")||"";
+    html+='<div class="card" style="margin-top:14px"><h3>Kommentar f\u00f6r dagen</h3>';
+    html+='<textarea id="rd_comment" placeholder="Hur gick dagen? N\u00e5got att notera..." oninput="debounceSaveDay()" style="width:100%;background:var(--cardHover);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);padding:10px 14px;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:80px;line-height:1.5;box-sizing:border-box">'+escH(commentVal)+'</textarea>';
+    html+='</div>';
 
     html+='<div class="actions"><span class="save-msg" id="saveMsg">\u2713 Sparas automatiskt</span></div>';
 
@@ -2026,7 +2076,7 @@ function renderOverview(nd){
     makeChart("c10",{type:"line",data:{labels:labels,datasets:[{label:"Optiqo %",data:dailyOptiqo,borderColor:"#EC4899",backgroundColor:"rgba(236,72,153,0.08)",fill:true,tension:0.35,pointRadius:1,borderWidth:2}]}});
   }
   // Check insights after rendering overview
-  if(!singleDay) setTimeout(checkInsights,300);
+  // Insights are now on their own page
 }
 
 // ========== INSIGHTS / TREND DETECTION ==========
@@ -2113,6 +2163,155 @@ function showInsightsPopup(insights){
   });
   h+='</div></div>';
   document.body.insertAdjacentHTML("beforeend",h);
+}
+
+function renderInsightsPage(){
+  document.getElementById("kpis").innerHTML="";
+  var sel=selectedRests.length?selectedRests:state.restaurants;
+  var DAYNAMES=["S\u00f6ndag","M\u00e5ndag","Tisdag","Onsdag","Torsdag","Fredag","L\u00f6rdag"];
+  var insights=[];
+
+  // Trend detection: weekday under-forecast
+  sel.forEach(function(rest){
+    var weekdayData={};
+    for(var w=0;w<5;w++){
+      for(var wd=0;wd<7;wd++){
+        var d=new Date();
+        d.setDate(d.getDate()-d.getDay()-7*w+wd);
+        var ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        var day=d.getDate();
+        ensureMonth(ym);
+        var s=getVal(ym,rest,day,"sales");
+        var fc=getVal(ym,rest,day,"fcSales");
+        if(s>0&&fc>0){
+          if(!weekdayData[wd])weekdayData[wd]=[];
+          weekdayData[wd].push({sales:s,fc:fc,ym:ym,day:day});
+        }
+      }
+    }
+    Object.keys(weekdayData).forEach(function(dow){
+      var entries=weekdayData[dow];
+      if(entries.length<3)return;
+      var recent=entries.slice(0,3);
+      var allUnder=recent.every(function(e){return e.sales<e.fc*0.92;});
+      if(!allUnder)return;
+      var nextDate=new Date();
+      var diff=(+dow-nextDate.getDay()+7)%7;
+      if(diff===0)diff=7;
+      nextDate.setDate(nextDate.getDate()+diff);
+      var nextYm=nextDate.getFullYear()+"-"+String(nextDate.getMonth()+1).padStart(2,"0");
+      ensureMonth(nextYm);
+      var nextFc=getVal(nextYm,rest,nextDate.getDate(),"fcSales");
+      var avgActual=Math.round(recent.reduce(function(a,e){return a+e.sales;},0)/recent.length);
+      var avgFc=Math.round(recent.reduce(function(a,e){return a+e.fc;},0)/recent.length);
+      insights.push({type:"underforecast",rest:rest,dow:+dow,dayName:DAYNAMES[+dow],avgActual:avgActual,avgFc:avgFc,weeks:recent.length,nextFc:nextFc,nextDate:nextDate.getDate()+"/"+(nextDate.getMonth()+1)});
+    });
+  });
+
+  // High labor % detection
+  sel.forEach(function(rest){
+    var highLaborDays=[];
+    for(var w=0;w<4;w++){
+      for(var wd=0;wd<7;wd++){
+        var d=new Date();
+        d.setDate(d.getDate()-d.getDay()-7*w+wd);
+        var ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        var day=d.getDate();
+        var s=getVal(ym,rest,day,"sales");
+        var l=getVal(ym,rest,day,"laborCost");
+        if(s>0&&l>0){
+          var pct=l/s*100;
+          if(pct>28)highLaborDays.push({day:day,ym:ym,pct:pct,dow:d.getDay()});
+        }
+      }
+    }
+    if(highLaborDays.length>=5){
+      var avgPct=Math.round(highLaborDays.reduce(function(a,e){return a+e.pct;},0)/highLaborDays.length*10)/10;
+      insights.push({type:"highlabor",rest:rest,count:highLaborDays.length,avgPct:avgPct});
+    }
+  });
+
+  // Low productivity detection
+  sel.forEach(function(rest){
+    var lowProdDays=0,totalDays=0;
+    for(var w=0;w<4;w++){
+      for(var wd=0;wd<7;wd++){
+        var d=new Date();
+        d.setDate(d.getDate()-d.getDay()-7*w+wd);
+        var ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        var day=d.getDate();
+        var s=getVal(ym,rest,day,"sales");
+        var h=getVal(ym,rest,day,"hours");
+        if(s>0&&h>0){
+          totalDays++;
+          if(s/h<1000)lowProdDays++;
+        }
+      }
+    }
+    if(lowProdDays>=5&&totalDays>0){
+      insights.push({type:"lowprod",rest:rest,count:lowProdDays,totalDays:totalDays});
+    }
+  });
+
+  // High absence detection
+  sel.forEach(function(rest){
+    var totalAbs=0,totalHours=0;
+    for(var w=0;w<4;w++){
+      for(var wd=0;wd<7;wd++){
+        var d=new Date();
+        d.setDate(d.getDate()-d.getDay()-7*w+wd);
+        var ym=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        var day=d.getDate();
+        var h=getVal(ym,rest,day,"hours");
+        var a=getVal(ym,rest,day,"absence");
+        if(h>0){totalHours+=h;totalAbs+=a;}
+      }
+    }
+    var abRate=(totalHours+totalAbs)>0?totalAbs/(totalHours+totalAbs)*100:0;
+    if(abRate>4){
+      insights.push({type:"highabsence",rest:rest,rate:Math.round(abRate*10)/10,hours:Math.round(totalAbs)});
+    }
+  });
+
+  // Render page
+  var h='<div style="max-width:800px">';
+  h+='<div style="margin-bottom:24px"><div style="font-size:20px;font-weight:700;color:var(--text)">Insikter</div>';
+  h+='<div style="font-size:13px;color:var(--muted);margin-top:4px">Automatisk analys av senaste 4-5 veckorna</div></div>';
+
+  if(insights.length===0){
+    h+='<div style="padding:40px 20px;text-align:center;color:var(--dim);font-size:14px">Inga insikter just nu. Allt ser bra ut!</div>';
+  } else {
+    insights.forEach(function(ins){
+      var col=ins.rest?getRestColor(ins.rest):"var(--accent)";
+      h+='<div style="background:var(--cardHover);border:1px solid var(--border);border-left:3px solid '+col+';border-radius:var(--radius);padding:18px 22px;margin-bottom:12px">';
+      if(ins.rest)h+='<div style="font-size:11px;font-weight:700;color:'+col+';margin-bottom:6px">'+escH(ins.rest)+'</div>';
+
+      if(ins.type==="underforecast"){
+        var diff=Math.round((1-ins.avgActual/ins.avgFc)*100);
+        h+='<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">'+ins.dayName+'ar s\u00e4ljer under prognos</div>';
+        h+='<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:8px">Senaste '+ins.weeks+' veckor: snitt '+fmt(ins.avgActual)+' kr vs '+fmt(ins.avgFc)+' kr prognos (<span style="color:var(--red);font-weight:600">-'+diff+'%</span>)</div>';
+        if(ins.nextFc>0&&ins.nextFc>=ins.avgFc*0.95){
+          h+='<div style="font-size:12px;color:var(--amber);font-weight:600">Prognosen f\u00f6r '+ins.dayName+' '+ins.nextDate+' \u00e4r fortfarande '+fmt(ins.nextFc)+' kr \u2014 \u00f6verv\u00e4g att s\u00e4nka</div>';
+        } else if(ins.nextFc===0){
+          h+='<div style="font-size:12px;color:var(--amber);font-weight:600">Ingen prognos inlagd f\u00f6r '+ins.dayName+' '+ins.nextDate+'</div>';
+        } else {
+          h+='<div style="font-size:12px;color:var(--green);font-weight:600">Prognosen f\u00f6r '+ins.dayName+' '+ins.nextDate+' \u00e4r justerad ('+fmt(ins.nextFc)+' kr)</div>';
+        }
+      } else if(ins.type==="highlabor"){
+        h+='<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">H\u00f6g personalkostnad</div>';
+        h+='<div style="font-size:13px;color:var(--muted);line-height:1.6">'+ins.count+' dagar med labor \u00f6ver 28% senaste 4 veckorna. Snitt: <span style="color:var(--red);font-weight:600">'+ins.avgPct+'%</span></div>';
+      } else if(ins.type==="lowprod"){
+        h+='<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">L\u00e5g produktivitet</div>';
+        h+='<div style="font-size:13px;color:var(--muted);line-height:1.6">'+ins.count+' av '+ins.totalDays+' dagar med produktivitet under 1 000 kr/tim</div>';
+      } else if(ins.type==="highabsence"){
+        h+='<div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">H\u00f6g sjukfr\u00e5nvaro</div>';
+        h+='<div style="font-size:13px;color:var(--muted);line-height:1.6">Sjukfr\u00e5nvarograd: <span style="color:var(--red);font-weight:600">'+ins.rate+'%</span> ('+ins.hours+' timmar senaste 4 veckorna)</div>';
+      }
+      h+='</div>';
+    });
+  }
+  h+='</div>';
+  document.getElementById("content").innerHTML=h;
 }
 
 // ========== PAGE: STYRKORT ==========
@@ -2481,13 +2680,13 @@ function renderMessages(){
       h+='<div class="chat-empty">Skicka ett meddelande för att starta konversationen</div>';
     }
     h+='</div>';
-    h+='<div id="chatFilePreview" style="display:none;padding:8px 16px;background:var(--cardHover);border-radius:var(--radius-sm) var(--radius-sm) 0 0;display:none;align-items:center;gap:10px">';
+    h+='<div id="chatFilePreview" style="display:none;padding:8px 16px;background:var(--cardHover);border-radius:var(--radius-sm) var(--radius-sm) 0 0;align-items:center;gap:10px">';
     h+='<img id="chatFileThumb" style="max-height:60px;max-width:120px;border-radius:8px;object-fit:cover">';
     h+='<span id="chatFileName" style="font-size:12px;color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>';
     h+='<button onclick="clearChatFile()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:2px 6px">&times;</button>';
     h+='</div>';
     h+='<div class="chat-input-area">';
-    h+='<input type="file" id="chatFileInput" accept="image/*" style="display:none" onchange="handleChatFile(this)">';
+    h+='<input type="file" id="chatFileInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" style="display:none" onchange="handleChatFile(this)">';
     h+='<button onclick="document.getElementById(\'chatFileInput\').click()" style="width:36px;height:36px;border-radius:50%;background:var(--cardHover);border:1px solid var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s" onmouseover="this.style.borderColor=\'var(--muted)\'" onmouseout="this.style.borderColor=\'var(--border)\'"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>';
     h+='<textarea class="chat-input" id="chatInput" rows="1" placeholder="Skriv ett meddelande..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>';
     h+='<button class="chat-send-btn" onclick="sendChat()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>';
@@ -2536,21 +2735,50 @@ var chatPendingFile=null;
 function handleChatFile(input){
   var file=input.files&&input.files[0];
   if(!file)return;
-  if(file.size>1024*1024){showCustomModal("Filen är för stor (max 1 MB)","",false);input.value="";return;}
-  var reader=new FileReader();
-  reader.onload=function(e){
-    chatPendingFile={name:file.name,type:file.type,data:e.target.result};
-    var prev=document.getElementById("chatFilePreview");
-    var thumb=document.getElementById("chatFileThumb");
-    var fname=document.getElementById("chatFileName");
-    if(prev){prev.style.display="flex";}
-    if(thumb){
-      if(file.type.startsWith("image/")){thumb.src=e.target.result;thumb.style.display="block";}
-      else{thumb.style.display="none";}
-    }
-    if(fname)fname.textContent=file.name;
-  };
-  reader.readAsDataURL(file);
+  if(file.size>5*1024*1024){alert("Filen \u00e4r f\u00f6r stor (max 5 MB)");input.value="";return;}
+  // Compress images to fit Firestore 1MB doc limit
+  if(file.type.startsWith("image/")){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var canvas=document.createElement("canvas");
+        var maxDim=800;
+        var w=img.width,h=img.height;
+        if(w>maxDim||h>maxDim){
+          if(w>h){h=Math.round(h*maxDim/w);w=maxDim;}
+          else{w=Math.round(w*maxDim/h);h=maxDim;}
+        }
+        canvas.width=w;canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        var compressed=canvas.toDataURL("image/jpeg",0.6);
+        chatPendingFile={name:file.name,type:"image/jpeg",data:compressed};
+        showFilePreview(compressed,file.name,true);
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // Non-image files: reject if too large for Firestore
+    if(file.size>500*1024){alert("Filer som inte \u00e4r bilder m\u00e5ste vara under 500 KB");input.value="";return;}
+    var reader2=new FileReader();
+    reader2.onload=function(e){
+      chatPendingFile={name:file.name,type:file.type,data:e.target.result};
+      showFilePreview(null,file.name,false);
+    };
+    reader2.readAsDataURL(file);
+  }
+}
+function showFilePreview(imgSrc,name,isImage){
+  var prev=document.getElementById("chatFilePreview");
+  var thumb=document.getElementById("chatFileThumb");
+  var fname=document.getElementById("chatFileName");
+  if(prev)prev.style.display="flex";
+  if(thumb){
+    if(isImage&&imgSrc){thumb.src=imgSrc;thumb.style.display="block";}
+    else thumb.style.display="none";
+  }
+  if(fname)fname.textContent=name;
 }
 function clearChatFile(){
   chatPendingFile=null;
@@ -2598,7 +2826,10 @@ function sendChat(){
     conv.msgs.forEach(function(m2){if(m2.id==="_pending_"+now)m2.id="_sent_"+now;});
   }).catch(function(err){
     console.error("Send failed:",err);
-    showCustomModal("Kunde inte skicka: "+err.message,"",false);
+    alert("Kunde inte skicka meddelandet: "+err.message);
+    // Remove optimistic message
+    if(conv)conv.msgs=conv.msgs.filter(function(m2){return m2.id!=="_pending_"+now;});
+    renderMessages();
   });
 }
 
@@ -3035,7 +3266,7 @@ function renderRestMgr(){
   var me=currentUser.email.toLowerCase();
   var promises=state.restaurants.map(function(r){
     return db.collection("restaurantRegistry").doc(r).get().then(function(doc){
-      return {name:r,members:(doc.exists&&doc.data().members)||[],color:(doc.exists&&doc.data().color)||"",shiftLeaders:(doc.exists&&doc.data().shiftLeaders)||[]};
+      return {name:r,members:(doc.exists&&doc.data().members)||[],color:(doc.exists&&doc.data().color)||"",shiftLeaders:(doc.exists&&doc.data().shiftLeaders)||[],sheetUrl:(doc.exists&&doc.data().sheetUrl)||""};
     });
   });
   Promise.all(promises).then(function(rests){
@@ -3079,6 +3310,15 @@ function renderRestMgr(){
       });
       h+='<div class="restmgr-add-row"><input id="rmgr_sl_'+escH(r.name)+'" placeholder="L\u00e4gg till shiftleader..." onkeydown="if(event.key===\'Enter\')addSlMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')"><button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="addSlMgr(\''+escH(r.name.replace(/'/g,"\\'"))+'\')">+</button></div>';
       h+='</div>';
+      // Google Sheet URL — admin only
+      if(isAdmin){
+        h+='<div class="restmgr-members" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">';
+        h+='<div style="font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Google Sheet (CSV-l\u00e4nk)</div>';
+        h+='<div style="font-size:10px;color:var(--dim);margin-bottom:6px">Publicera sheetet som CSV och klistra in l\u00e4nken h\u00e4r</div>';
+        h+='<div class="restmgr-add-row"><input id="rmgr_sheet_'+escH(r.name)+'" value="'+escH(r.sheetUrl)+'" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" style="font-size:11px"><button class="btn btn-primary" style="font-size:10px;padding:4px 10px" onclick="saveSheetUrl(\''+escH(r.name.replace(/'/g,"\\'"))+'\')">Spara</button></div>';
+        if(r.sheetUrl)h+='<button class="btn btn-outline" style="font-size:10px;padding:4px 10px;margin-top:6px" onclick="syncFromSheet(\''+escH(r.name.replace(/'/g,"\\'"))+'\',\''+escH(r.sheetUrl.replace(/'/g,"\\'"))+'\')">Synka nu</button>';
+        h+='</div>';
+      }
       h+='</div>';
     });
     wrap.innerHTML=h;
@@ -3124,6 +3364,279 @@ function removeSlMgr(restName,name){
   }).then(function(){slCache[restName]=(slCache[restName]||[]).filter(function(n){return n!==name;});renderRestMgr();});
 }
 
+function syncAllSheets(){
+  var done=0,total=0,totalDays=0;
+  state.restaurants.forEach(function(r){
+    db.collection("restaurantRegistry").doc(r).get().then(function(doc){
+      var url=(doc.exists&&doc.data().sheetUrl)||"";
+      if(!url)return;
+      total++;
+      fetchSheetCSV(url).then(function(csv){
+        var count=importCSVForRest(r,csv);
+        totalDays+=count;
+        done++;
+        if(done>=total){saveState();addSyncNotification("Synk klar",totalDays+" dagar synkade fr\u00e5n "+done+" sheet");render();}
+      }).catch(function(err){done++;console.error("Sync "+r+":",err);if(done>=total){saveState();addSyncNotification("Synk klar (med fel)","Synkade "+done+" av "+total+" restauranger");render();}});
+    });
+  });
+}
+
+function importCSVForRest(restName,csv){
+  var rows=parseCSV(csv);
+  if(rows.length<2){console.log("Sheet has only",rows.length,"rows");return 0;}
+  
+  // Find the header row - look for row containing "datum"
+  var headerIdx=-1;
+  for(var r=0;r<Math.min(rows.length,25);r++){
+    for(var c=0;c<rows[r].length;c++){
+      if(rows[r][c].replace(/\s+/g," ").trim().toLowerCase()==="datum"){headerIdx=r;break;}
+    }
+    if(headerIdx>=0)break;
+  }
+  if(headerIdx<0){console.log("No DATUM header found");return 0;}
+  
+  // Normalize headers: collapse all whitespace (including newlines) to single space
+  var headers=rows[headerIdx].map(function(h){return h.replace(/\s+/g," ").trim().toLowerCase();});
+  console.log("Headers at row "+headerIdx+":",JSON.stringify(headers.filter(function(h){return h;})));
+  
+  // Find DATUM column
+  var datumCol=headers.indexOf("datum");
+  if(datumCol<0){console.log("DATUM column not found");return 0;}
+  
+  // Build column map by scanning headers
+  // For duplicated columns (like snittid, optiqo, google), pick the one that has data
+  function findBestCol(patterns){
+    var candidates=[];
+    for(var ci=0;ci<headers.length;ci++){
+      for(var p=0;p<patterns.length;p++){
+        if(headers[ci].indexOf(patterns[p])>=0){candidates.push(ci);break;}
+      }
+    }
+    if(candidates.length<=1)return candidates[0]||-1;
+    // Multiple matches: pick the FIRST one that has data in the first data rows
+    for(var di=headerIdx+1;di<Math.min(rows.length,headerIdx+5);di++){
+      for(var k=0;k<candidates.length;k++){
+        if(rows[di][candidates[k]]&&rows[di][candidates[k]].trim())return candidates[k];
+      }
+    }
+    return candidates[0]; // default to first
+  }
+  
+  var colMap={
+    fcSales: findBestCol(["fc net sales","fc net"]),
+    fcLabor: findBestCol(["fc labor cost","fc labor c"]),
+    sjuk: findBestCol(["sjuktimmar"]),
+    hours: findBestCol(["utfall st\u00e4mplade","arbetade"]),
+    labor: -1, // special handling below
+    sales: -1, // special handling below
+    waste: -1, // special handling below
+    tt: findBestCol(["ticket time"]),
+    optiqo: findBestCol(["cleaning optiqo","optiqo"]),
+    google: findBestCol(["kundn\u00f6jdhet"]),
+    slDay: findBestCol(["sl dag"]),
+    slEve: findBestCol(["sl kv\u00e4ll","sl kv"]),
+    comment: findBestCol(["kommentera","kommentar"])
+  };
+  // Find outcome columns: exclude any column with "fc" in the header
+  for(var ci=0;ci<headers.length;ci++){
+    var h=headers[ci];
+    if(h.indexOf("fc ")>=0||h.indexOf("fc\n")>=0||h.substring(0,3)==="fc ")continue; // skip forecast cols
+    if(h.indexOf("diff")>=0)continue; // skip diff cols
+    if(colMap.sales<0&&h.indexOf("net sale")>=0)colMap.sales=ci;
+    if(colMap.labor<0&&h.indexOf("labor")>=0&&h.indexOf("cost")>=0)colMap.labor=ci;
+    if(colMap.waste<0&&h.indexOf("waste cost")>=0)colMap.waste=ci;
+  }
+  console.log("Column map:",JSON.stringify(colMap));
+  
+  var imported=0;
+  for(var i=headerIdx+1;i<rows.length;i++){
+    var row=rows[i];
+    if(!row||row.length<3)continue;
+    var dateVal=(row[datumCol]||"").trim();
+    if(!dateVal)continue;
+    var parsed=parseSheetDate(dateVal);
+    if(!parsed)continue;
+    var ym=parsed.ym,day=parsed.day;
+    ensureMonth(ym);
+    
+    function gn(col){
+      if(col<0||col>=row.length)return null;
+      var v=(row[col]||"").trim();
+      if(!v)return null;
+      return parseSheetNum(v);
+    }
+    function gs(col){
+      if(col<0||col>=row.length)return null;
+      var v=(row[col]||"").trim();
+      return v||null;
+    }
+    
+    var v;
+    // Always import forecast data
+    if((v=gn(colMap.fcSales))!==null)setVal(ym,restName,day,"fcSales",v);
+    if((v=gn(colMap.fcLabor))!==null)setVal(ym,restName,day,"fcLabor",v);
+    // Only import outcome data if there's actual sales (means the day has been reported)
+    var hasSales=gn(colMap.sales);
+    if(hasSales!==null&&hasSales>0){
+      setVal(ym,restName,day,"sales",hasSales);
+      if((v=gn(colMap.labor))!==null)setVal(ym,restName,day,"laborCost",v);
+      if((v=gn(colMap.hours))!==null)setVal(ym,restName,day,"hours",v);
+      if((v=gn(colMap.waste))!==null)setVal(ym,restName,day,"waste",v);
+      if((v=gn(colMap.sjuk))!==null)setVal(ym,restName,day,"absence",v);
+      if((v=gn(colMap.tt))!==null)setVal(ym,restName,day,"tt",v);
+      if((v=gn(colMap.optiqo))!==null)setVal(ym,restName,day,"optiqo",v);
+      if((v=gn(colMap.google))!==null)setVal(ym,restName,day,"google",v);
+      if((v=gs(colMap.slDay))!==null)setVal(ym,restName,day,"slDay",v);
+      if((v=gs(colMap.slEve))!==null)setVal(ym,restName,day,"slEve",v);
+      if((v=gs(colMap.comment))!==null)setVal(ym,restName,day,"comment",v);
+    } else {
+      // Clear any old outcome data for days without actual sales
+      try{
+        var dayObj=state.months[ym]&&state.months[ym][restName]&&state.months[ym][restName][day];
+        if(dayObj){
+          delete dayObj.sales;delete dayObj.laborCost;delete dayObj.hours;
+          delete dayObj.waste;delete dayObj.absence;delete dayObj.tt;
+          delete dayObj.optiqo;delete dayObj.google;delete dayObj.googleCount;
+          delete dayObj.slDay;delete dayObj.slEve;delete dayObj.comment;
+        }
+      }catch(e){}
+    }
+    
+    if(imported===0)console.log("First row: day="+day+"/"+ym+", sales="+gn(colMap.sales)+", labor="+gn(colMap.labor)+", tt="+gn(colMap.tt)+", google="+gn(colMap.google)+", slDay="+gs(colMap.slDay));
+    imported++;
+  }
+  console.log("Imported "+imported+" days for "+restName);
+  return imported;
+}
+function saveSheetUrl(restName){
+  var inp=document.getElementById("rmgr_sheet_"+restName);
+  if(!inp)return;
+  var url=inp.value.trim();
+  db.collection("restaurantRegistry").doc(restName).update({sheetUrl:url}).then(function(){
+    renderRestMgr();
+  }).catch(function(err){console.error("Save sheet URL:",err);});
+}
+
+function fetchSheetCSV(sheetUrl){
+  // Try direct first, then CORS proxies as fallback
+  return fetch(sheetUrl).then(function(r){
+    if(!r.ok)throw new Error("HTTP "+r.status);
+    return r.text();
+  }).then(function(text){
+    if(text&&text.length>10&&text.indexOf(",")>=0)return text;
+    throw new Error("Empty or invalid response");
+  }).catch(function(){
+    // Fallback: allorigins proxy
+    var proxyUrl="https://api.allorigins.win/raw?url="+encodeURIComponent(sheetUrl);
+    return fetch(proxyUrl).then(function(r){
+      if(!r.ok)throw new Error("Proxy HTTP "+r.status);
+      return r.text();
+    });
+  }).catch(function(){
+    // Fallback 2: corsproxy.io
+    var proxyUrl2="https://corsproxy.io/?"+encodeURIComponent(sheetUrl);
+    return fetch(proxyUrl2).then(function(r){
+      if(!r.ok)throw new Error("Proxy2 HTTP "+r.status);
+      return r.text();
+    });
+  });
+}
+
+function syncFromSheet(restName,sheetUrl){
+  if(!sheetUrl)return;
+  var btn=event.target;btn.textContent="Synkar...";btn.disabled=true;
+  fetchSheetCSV(sheetUrl).then(function(csv){
+    var imported=importCSVForRest(restName,csv);
+    saveState();
+    btn.textContent="Synka nu";btn.disabled=false;
+    addSyncNotification("Synk klar",imported+" dagar importerade f\u00f6r "+restName);
+    if(currentPage==="overview"||currentPage==="results"||currentPage==="forecast")render();
+  }).catch(function(err){
+    btn.textContent="Synka nu";btn.disabled=false;
+    console.error("Sheet sync error:",err);
+    addSyncNotification("Synk misslyckades","Kunde inte h\u00e4mta "+restName+": "+err.message);
+  });
+}
+
+function parseCSV(text){
+  var rows=[];var row=[];var cell="";var inQuote=false;
+  for(var i=0;i<text.length;i++){
+    var c=text[i];
+    if(inQuote){
+      if(c==='"'&&text[i+1]==='"'){cell+='"';i++;}
+      else if(c==='"')inQuote=false;
+      else cell+=c;
+    }else{
+      if(c==='"')inQuote=true;
+      else if(c===','){row.push(cell);cell="";}
+      else if(c==='\n'||c==='\r'){
+        if(c==='\r'&&text[i+1]==='\n')i++;
+        row.push(cell);cell="";
+        if(row.some(function(c2){return c2.trim();}))rows.push(row);
+        row=[];
+      }else cell+=c;
+    }
+  }
+  row.push(cell);
+  if(row.some(function(c2){return c2.trim();}))rows.push(row);
+  return rows;
+}
+
+function parseSheetDate(val){
+  // Handle M/D/YYYY, YYYY-MM-DD, D/M/YYYY etc
+  val=val.trim().replace(/\s+.*$/,""); // strip time/weekday suffix
+  var m;
+  // M/D/YYYY (Google Sheets default)
+  m=val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m){
+    var month=parseInt(m[1]),day=parseInt(m[2]),year=parseInt(m[3]);
+    return{ym:year+"-"+String(month).padStart(2,"0"),day:day};
+  }
+  // YYYY-MM-DD
+  m=val.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m)return{ym:m[1]+"-"+m[2].padStart(2,"0"),day:parseInt(m[3])};
+  // D/M/YYYY
+  m=val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+  if(m)return{ym:m[3]+"-"+String(parseInt(m[2])).padStart(2,"0"),day:parseInt(m[1])};
+  return null;
+}
+
+function parseSheetNum(val){
+  if(typeof val==="number")return val;
+  val=String(val).trim();
+  // Remove "kr", "%", spaces, non-breaking spaces
+  val=val.replace(/\s*kr\s*/gi,"").replace(/%/g,"").replace(/\u00a0/g,"").replace(/\s/g,"");
+  // Handle Swedish number format: 1.234,56 or 1 234,56
+  if(val.indexOf(",")>=0&&val.indexOf(".")>=0){
+    // 1.234,56 -> 1234.56
+    val=val.replace(/\./g,"").replace(",",".");
+  }else if(val.indexOf(",")>=0){
+    val=val.replace(",",".");
+  }
+  var n=parseFloat(val);
+  return isNaN(n)?0:n;
+}
+
+function findCol(headers,pattern){
+  pattern=pattern.toLowerCase();
+  // Exact match first
+  for(var i=0;i<headers.length;i++){
+    if(headers[i]===pattern)return i;
+  }
+  // Partial match
+  for(var i=0;i<headers.length;i++){
+    if(headers[i].indexOf(pattern)>=0)return i;
+  }
+  // Regex match
+  try{
+    var re=new RegExp(pattern);
+    for(var i=0;i<headers.length;i++){
+      if(re.test(headers[i]))return i;
+    }
+  }catch(e){}
+  return -1;
+}
+
 // ========== NOTIFICATIONS ==========
 var notifications=[];
 var notifInterval=null;
@@ -3163,7 +3676,7 @@ function renderNotifList(){
   notifications.slice(0,20).forEach(function(n){
     var cls="notif-item"+(n.seen?"":" unread");
     var iconCls="notif-icon "+(n.type||"chat");
-    var icon=n.type==="reminder"?"\uD83D\uDD14":n.type==="result"?"\u2705":"\uD83D\uDCAC";
+    var icon=n.type==="reminder"?"\uD83D\uDD14":n.type==="result"?"\u2705":n.type==="sync"?"\u21BB":"\uD83D\uDCAC";
     var ago=timeAgo(n.ts);
     h+='<div class="'+cls+'" onclick="notifClick(\''+escH(n.type)+'\',\''+escH((n.target||"").replace(/'/g,"\\'"))+'\')">';
     h+='<div class="'+iconCls+'">'+icon+'</div>';
